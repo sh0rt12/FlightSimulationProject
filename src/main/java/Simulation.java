@@ -1,5 +1,6 @@
+import java.util.ArrayList;
+
 public class Simulation {
-    // Atrybuty prywatne zgodne z diagramem klas
     private Board board;
     private int stepCount;
     private int windLevel;
@@ -23,21 +24,25 @@ public class Simulation {
 
         applyWindEffect();
 
-        for (Plane plane : board.getPlanes()) {
-            plane.step(board);
-            plane.move();
+        for (Plane plane : new ArrayList<>(board.getPlanes())) {
+            if (plane.state != PlaneState.DEAD) {
+                plane.step(board);
+                plane.move();
+            }
         }
 
-        for (Projectile projectile : board.getProjectiles()) {
+        for (Projectile projectile : new ArrayList<>(board.getProjectiles())) {
             projectile.move();
         }
 
-        // 4. Lotniska przetwarzają swoją turę (np. tankują zaparkowane samoloty)
         for (Airport airport : board.getAirports()) {
             airport.processTurn();
         }
 
         board.checkCollisions();
+
+        board.getPlanes().removeIf(p -> p.state == PlaneState.DEAD);
+        board.getProjectiles().removeIf(p -> p.isOutOfBoard(1000, 1000));
 
         spawnPlanes();
     }
@@ -58,14 +63,12 @@ public class Simulation {
         return stepCount;
     }
 
-    // Pozwala dodać samolot bezpośrednio z poziomu Main
     public void addTestPlane(Plane p) {
         this.board.addPlane(p);
         if (p instanceof RedPlane) totalRedPlanes++;
         if (p instanceof BluePlane) totalBluePlanes++;
     }
 
-    // Pozwala wypisać aktualny stan obiektów w konsoli
     public void printCurrentStatus() {
         System.out.println("====== KROK SYMULACJI: " + stepCount + " ======");
         for (Plane p : board.getPlanes()) {

@@ -1,18 +1,78 @@
+import java.util.Random;
+
 public class RedPlane extends Plane {
 
+    private static final Random random = new Random();
+    private final float detectionRange;
+    private final int fightDuration;
+
     public RedPlane(int id, float x, float y) {
-        super(id, x, y);
-        this.maxFuel = 100.0f;
-        this.fuel = 100.0f;
+        super(id, x, y, 50.0f, 500.0f);
+        this.maxFuel = 300.0f;
+        this.fuel = 300.0f;
         this.maxAmmo = 10;
         this.ammo = 10;
         this.hp = 3;
-        this.baseSpeed = 9.5f;
-        this.currentSpeed = 9.5f;
+        this.baseSpeed = 8.5f + random.nextFloat() * 2.0f;
+        this.currentSpeed = this.baseSpeed;
+        this.detectionRange = 80.0f + random.nextFloat() * 80.0f;
+        this.fightDuration = 3;
     }
 
     @Override
     public void step(Board board) {
-        // mechanika decyzji w kroku tu bedzie
+        if (this.state == PlaneState.DEAD) return;
+
+        this.target = board.getClosestEnemy(this);
+
+        if (this.state == PlaneState.EVADING) {
+            this.fuel -= 1.5f;
+            if (this.evadeTimer <= 0) {
+                if (worthFlyingToBase()) {
+                    this.state = PlaneState.RETURNING_TO_BASE;
+                } else {
+                    this.state = PlaneState.FLYING;
+                }
+            }
+            return;
+        }
+
+        if (this.state == PlaneState.RETURNING_TO_BASE) {
+            this.fuel -= 1.0f;
+            return;
+        }
+
+        if (worthFlyingToBase()) {
+            this.state = PlaneState.RETURNING_TO_BASE;
+            this.fuel -= 1.0f;
+            return;
+        }
+
+        if (this.state == PlaneState.FLYING) {
+            this.fuel -= 1.0f;
+            if (this.target != null && isNearEnemy(this.target)) {
+                this.state = PlaneState.FIGHTING;
+                this.fightTimer = fightDuration;
+            }
+        } else if (this.state == PlaneState.FIGHTING) {
+            this.fuel -= 1.5f;
+            if (this.target != null) {
+                shoot(this.target.x, this.target.y);
+                this.ammo--;
+            }
+            if (this.fightTimer <= 0) {
+                if (worthFlyingToBase()) {
+                    this.state = PlaneState.RETURNING_TO_BASE;
+                } else {
+                    this.state = PlaneState.FLYING;
+                }
+            }
+        }
+    }
+
+    private boolean isNearEnemy(Plane enemy) {
+        float dx = this.x - enemy.x;
+        float dy = this.y - enemy.y;
+        return Math.sqrt(dx * dx + dy * dy) < detectionRange;
     }
 }
