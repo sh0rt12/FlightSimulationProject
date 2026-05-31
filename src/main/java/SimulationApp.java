@@ -11,14 +11,14 @@ public class SimulationApp extends Application {
         Simulation simulation = new Simulation();
         Random random = new Random();
 
-        for (int i = 1; i <= 10; i++) {
+        for (int i = 1; i <= 5; i++) {
             float y = 50.0f + random.nextFloat() * 900.0f;
             RedPlane red = new RedPlane(i * 2 - 1, 100.0f, y);
             red.state = PlaneState.FLYING;
             simulation.addTestPlane(red);
         }
 
-        for (int i = 1; i <= 10; i++) {
+        for (int i = 1; i <= 5; i++) {
             float y = 50.0f + random.nextFloat() * 900.0f;
             BluePlane blue = new BluePlane(i * 2, 900.0f, y);
             blue.state = PlaneState.FLYING;

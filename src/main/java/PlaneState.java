@@ -3,5 +3,6 @@ public enum PlaneState {
     EVADING,
     FIGHTING,
     RETURNING_TO_BASE,
+    PARKED,
     DEAD
 }

@@ -26,8 +26,6 @@ public class SimulationPanel extends Pane {
     public void startLoop() {
         AnimationTimer timer = new AnimationTimer() {
             private long lastUpdate = 0;
-            // Odstęp między krokami w nanosekundach (1 sekunda = 1 000 000 000 ns)
-            // 50 000 000 ns = 0.05 sekundy, co daje dokładnie 20 kroków na sekundę
             private final long nanoInterval = 100_000_000;
 
             @Override
@@ -53,8 +51,8 @@ public class SimulationPanel extends Pane {
         gc.setFill(Color.BLACK);
         gc.fillRect(0, 0, 1000, 800);
 
-        drawBase(50 * SCALE_X, 500 * SCALE_Y, Color.RED, "BAZA A");
-        drawBase(950 * SCALE_X, 500 * SCALE_Y, Color.CORNFLOWERBLUE, "BAZA B");
+        drawBase(50 * SCALE_X, 500 * SCALE_Y, Color.RED, "RED AIRPORT");
+        drawBase(950 * SCALE_X, 500 * SCALE_Y, Color.CORNFLOWERBLUE, "BLUE AIRPORT");
 
         List<Projectile> projectiles = simulation.getBoard().getProjectiles();
         for (Projectile proj : projectiles) {

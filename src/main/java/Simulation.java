@@ -27,7 +27,7 @@ public class Simulation {
         for (Plane plane : new ArrayList<>(board.getPlanes())) {
             if (plane.state != PlaneState.DEAD) {
                 plane.step(board);
-                plane.move();
+                plane.move(board);
             }
         }
 
@@ -52,7 +52,34 @@ public class Simulation {
     }
 
     public void spawnPlanes() {
+        java.util.Random random = new java.util.Random();
 
+        int currentRed = 0;
+        int currentBlue = 0;
+
+        for (Plane p : board.getPlanes()) {
+            if (p instanceof RedPlane) currentRed++;
+            if (p instanceof BluePlane) currentBlue++;
+        }
+
+        int targetCount = 5;
+
+        if (currentRed < targetCount) {
+            this.totalRedPlanes++;
+            float randomY = 50.0f + random.nextFloat() * 900.0f;
+
+            RedPlane newRed = new RedPlane(this.totalRedPlanes * 2 - 1, 100.0f, randomY);
+            newRed.setState(PlaneState.FLYING);
+            board.addPlane(newRed);
+        }
+
+        if (currentBlue < targetCount) {
+            this.totalBluePlanes++;
+            float randomY = 50.0f + random.nextFloat() * 900.0f;
+            BluePlane newBlue = new BluePlane(this.totalBluePlanes * 2, 900.0f, randomY);
+            newBlue.setState(PlaneState.FLYING);
+            board.addPlane(newBlue);
+        }
     }
 
     public Board getBoard() {
@@ -67,14 +94,5 @@ public class Simulation {
         this.board.addPlane(p);
         if (p instanceof RedPlane) totalRedPlanes++;
         if (p instanceof BluePlane) totalBluePlanes++;
-    }
-
-    public void printCurrentStatus() {
-        System.out.println("====== KROK SYMULACJI: " + stepCount + " ======");
-        for (Plane p : board.getPlanes()) {
-            System.out.printf("Samolot [%s] ID:%d | Poz: (%.1f, %.1f) | Stan: %s | Paliwo: %.1f | Amunicja: %d | HP: %d%n",
-                    p.getClass().getSimpleName(), p.id, p.x, p.y, p.state, p.fuel, p.ammo, p.hp);
-        }
-        System.out.println("====================================\n");
     }
 }

@@ -119,7 +119,7 @@ public abstract class Plane {
         return this.fuel <= fuelNeeded + 10;
     }
 
-    public void move() {
+    public void move(Board board) {
         updateTimers();
 
         if (this.hp <= 0 || this.fuel <= 0) {
@@ -144,12 +144,13 @@ public abstract class Plane {
             float dx = this.baseX - this.x;
             float dy = this.baseY - this.y;
             double distance = Math.sqrt(dx * dx + dy * dy);
+
+
             if (distance < 20.0) {
-                this.fuel = this.maxFuel;
-                this.ammo = this.maxAmmo;
-                this.hp = 3;
-                this.shotCooldown = 0;
-                this.state = PlaneState.FLYING;
+                Airport airport = board.getAirportFor(this);
+                if (airport.canDock()) {
+                    airport.dockPlane(this);
+                }
                 return;
             }
             if (distance > 0) {

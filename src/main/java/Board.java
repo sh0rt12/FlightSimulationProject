@@ -16,6 +16,9 @@ public class Board {
         this.planes = new ArrayList<>();
         this.projectiles = new ArrayList<>();
         this.airports = new ArrayList<>();
+
+        this.airports.add(new Airport(50.0f, 500.0f));
+        this.airports.add(new Airport(950.0f, 500.0f));
     }
 
     public void addPlane(Plane p) {
@@ -58,6 +61,14 @@ public class Board {
                     }
                 }
             }
+        }
+    }
+
+    public Airport getAirportFor(Plane p) {
+        if (p.baseX < 500) {
+            return airports.get(0);
+        } else {
+            return airports.get(1);
         }
     }
 
