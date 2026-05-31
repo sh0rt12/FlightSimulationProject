@@ -5,8 +5,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class SimulationPanel extends Pane {
@@ -18,21 +16,6 @@ public class SimulationPanel extends Pane {
     private static final double SCALE_X = 1000.0 / 1000.0;
     private static final double SCALE_Y = 800.0 / 1000.0;
 
-    private final List<Bullet> bullets = new ArrayList<>();
-
-    private static class Bullet {
-        double x, y, tx, ty;
-        int life;
-
-        Bullet(double x, double y, double tx, double ty) {
-            this.x = x;
-            this.y = y;
-            this.tx = tx;
-            this.ty = ty;
-            this.life = 8;
-        }
-    }
-
     public SimulationPanel(Simulation simulation) {
         this.simulation = simulation;
         this.canvas = new Canvas(1000, 800);
@@ -43,59 +26,48 @@ public class SimulationPanel extends Pane {
     public void startLoop() {
         AnimationTimer timer = new AnimationTimer() {
             private long lastUpdate = 0;
+            // Odstęp między krokami w nanosekundach (1 sekunda = 1 000 000 000 ns)
+            // 50 000 000 ns = 0.05 sekundy, co daje dokładnie 20 kroków na sekundę
+            private final long nanoInterval = 100_000_000;
 
             @Override
             public void handle(long now) {
-                if (now - lastUpdate >= 200_000_000) {
-                    spawnBullets();
+
+                if (lastUpdate == 0) {
+                    lastUpdate = now;
+                    return;
+                }
+
+                if (now - lastUpdate >= nanoInterval) {
                     simulation.step();
                     lastUpdate = now;
                 }
-                updateBullets();
+
                 draw();
             }
         };
         timer.start();
     }
 
-    private void spawnBullets() {
-        for (Plane p : simulation.getBoard().getPlanes()) {
-            if (p.state == PlaneState.FIGHTING && p.target != null && p.target.state != PlaneState.DEAD) {
-                bullets.add(new Bullet(
-                        p.x * SCALE_X,
-                        p.y * SCALE_Y,
-                        p.target.x * SCALE_X,
-                        p.target.y * SCALE_Y
-                ));
-            }
-        }
-    }
-
-    private void updateBullets() {
-        Iterator<Bullet> it = bullets.iterator();
-        while (it.hasNext()) {
-            Bullet b = it.next();
-            b.life--;
-            if (b.life <= 0) it.remove();
-        }
-    }
-
     private void draw() {
-        gc.setFill(Color.rgb(10, 14, 26));
+        gc.setFill(Color.BLACK);
         gc.fillRect(0, 0, 1000, 800);
 
-        drawBase(100 * SCALE_X, 350 * SCALE_Y, Color.RED, "BAZA R");
-        drawBase(900 * SCALE_X, 550 * SCALE_Y, Color.CORNFLOWERBLUE, "BAZA B");
+        drawBase(50 * SCALE_X, 500 * SCALE_Y, Color.RED, "BAZA A");
+        drawBase(950 * SCALE_X, 500 * SCALE_Y, Color.CORNFLOWERBLUE, "BAZA B");
 
-        for (Bullet b : bullets) {
-            double alpha = b.life / 8.0;
-            gc.setStroke(Color.color(1, 1, 1, alpha));
-            gc.setLineWidth(1.5);
-            gc.strokeLine(b.x, b.y, b.tx, b.ty);
+        List<Projectile> projectiles = simulation.getBoard().getProjectiles();
+        for (Projectile proj : projectiles) {
+            double px = proj.x * SCALE_X;
+            double py = proj.y * SCALE_Y;
 
-            gc.setFill(Color.color(1, 1, 0.5, alpha));
-            gc.fillOval(b.tx - 3, b.ty - 3, 6, 6);
+            Color bulletColor = (proj.getShooter() instanceof RedPlane) ? Color.ORANGE : Color.CYAN;
+
+            gc.setFill(bulletColor);
+
+            gc.fillOval(px - 3, py - 3, 6, 6);
         }
+
 
         List<Plane> planes = simulation.getBoard().getPlanes();
         for (Plane p : planes) {
@@ -107,6 +79,15 @@ public class SimulationPanel extends Pane {
         gc.fillText("Krok: " + simulation.getStepCount(), 10, 20);
     }
 
+    private void drawBase(double x, double y, Color color, String name) {
+        gc.setStroke(color);
+        gc.setLineWidth(2);
+        gc.strokeRect(x - 20, y - 20, 40, 40);
+        gc.setFill(Color.WHITE);
+        gc.setFont(Font.font(10));
+        gc.fillText(name, x - 18, y - 25);
+    }
+
     private void drawPlane(Plane p) {
         double x = p.x * SCALE_X;
         double y = p.y * SCALE_Y;
@@ -116,19 +97,9 @@ public class SimulationPanel extends Pane {
         gc.setFill(color);
         gc.fillOval(x - 8, y - 8, 16, 16);
 
-        gc.setFill(Color.WHITE);
-        gc.setFont(Font.font(10));
-        gc.fillText("HP:" + p.hp, x + 10, y - 5);
-        gc.fillText("F:" + (int) p.fuel, x + 10, y + 8);
-        gc.fillText(p.state.toString(), x - 15, y - 12);
-    }
-
-    private void drawBase(double x, double y, Color color, String label) {
-        gc.setStroke(color);
-        gc.setLineWidth(1.5);
-        gc.strokeOval(x - 25, y - 25, 50, 50);
-        gc.setFill(color);
-        gc.setFont(Font.font(11));
-        gc.fillText(label, x - 18, y + 4);
+        gc.setFill(Color.GRAY);
+        gc.fillRect(x - 10, y - 15, 20, 3);
+        gc.setFill(Color.GREEN);
+        gc.fillRect(x - 10, y - 15, (p.hp / 3.0) * 20, 3);
     }
 }

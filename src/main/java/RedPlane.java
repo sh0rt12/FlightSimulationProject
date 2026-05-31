@@ -3,8 +3,6 @@ import java.util.Random;
 public class RedPlane extends Plane {
 
     private static final Random random = new Random();
-    private final float detectionRange;
-    private final int fightDuration;
 
     public RedPlane(int id, float x, float y) {
         super(id, x, y, 50.0f, 500.0f, 80.0f + random.nextFloat() * 80.0f, 3, 3);
@@ -15,7 +13,5 @@ public class RedPlane extends Plane {
         this.hp = 3;
         this.baseSpeed = 8.5f + random.nextFloat() * 2.0f;
         this.currentSpeed = this.baseSpeed;
-        this.detectionRange = 80.0f + random.nextFloat() * 80.0f;
-        this.fightDuration = 3;
     }
 }

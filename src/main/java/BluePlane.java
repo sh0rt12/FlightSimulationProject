@@ -13,7 +13,5 @@ public class BluePlane extends Plane {
         this.hp = 3;
         this.baseSpeed = 8.5f + random.nextFloat() * 2.0f;
         this.currentSpeed = this.baseSpeed;
-        this.detectionRange = 80.0f + random.nextFloat() * 80.0f;
-        this.evadeDuration = 3;
     }
 }

@@ -43,7 +43,22 @@ public class Board {
     }
 
     public void checkCollisions() {
-        // Tu potem dodamy logikę trafień pocisków w samoloty
+        for (Projectile proj : new ArrayList<>(projectiles)) {
+            for (Plane plane : new ArrayList<>(planes)) {
+
+                if (proj.getShooter().getClass() != plane.getClass() && plane.state != PlaneState.DEAD) {
+                    float dx = proj.x - plane.x;
+                    float dy = proj.y - plane.y;
+                    double dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 12.0) {
+                        plane.takeDamage(1);
+                        projectiles.remove(proj);
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     public List<Plane> getPlanes() {
