@@ -37,4 +37,12 @@ public class Projectile {
     public Plane getShooter() {
         return shooter;
     }
+
+    public float getVx() {
+        return vx;
+    }
+
+    public float getVy() {
+        return vy;
+    }
 }

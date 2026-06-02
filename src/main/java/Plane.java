@@ -1,7 +1,7 @@
 public abstract class Plane {
     protected int id;
-    protected float x;
-    protected float y;
+    public float x;
+    public float y;
     protected float baseSpeed;
     protected float currentSpeed;
     protected int ammo;
@@ -11,8 +11,8 @@ public abstract class Plane {
     protected int hp;
     protected Plane target;
     protected PlaneState state;
-    protected int fightTimer;
-    protected int evadeTimer;
+    protected int fightTimer; // tego uzyjemy jak bedziemy robic bardziej zaawansowany system uników
+    protected int evadeTimer; // tego tez
     protected float baseX;
     protected float baseY;
     protected float detectionRange;
@@ -42,130 +42,61 @@ public abstract class Plane {
 
         this.target = board.getClosestEnemy(this);
 
-        if (this.state == PlaneState.EVADING) {
-            this.fuel -= 1.5f;
-            this.evadeTimer--;
-            if (this.evadeTimer <= 0) {
-                if (worthFlyingToBase()) {
-                    this.state = PlaneState.RETURNING_TO_BASE;
-                } else {
-                    this.state = PlaneState.FLYING;
-                }
-            }
-            return;
-        }
-
-        if (this.state == PlaneState.RETURNING_TO_BASE) {
-            this.fuel -= 1.0f;
-            return;
-        }
-
-        if (worthFlyingToBase()) {
+        if (this.hp <= 1 || this.ammo <= 0) {
             this.state = PlaneState.RETURNING_TO_BASE;
-            this.fuel -= 1.0f;
-            return;
+        } else if (this.state == PlaneState.RETURNING_TO_BASE && this.hp == 3 && this.ammo > 0) {
+            this.state = PlaneState.FLYING;
         }
 
+        if (this.state == PlaneState.FLYING && this.target != null && this.target.state != PlaneState.DEAD) {
+            float dx = this.target.x - this.x;
+            float dy = this.target.y - this.y;
+            double dist = Math.sqrt(dx * dx + dy * dy);
 
-        if (this.state == PlaneState.FLYING) {
-            this.fuel -= 1.0f;
-            if (this.target != null && isNearEnemy(this.target)) {
-                this.state = PlaneState.FIGHTING;
-                this.fightTimer = this.fightDuration;
+            if (dist < this.detectionRange && this.shotCooldown == 0) {
+                shoot(this.target.x, this.target.y, board);
+                this.shotCooldown = this.cooldownDuration;
+                this.ammo--;
             }
         }
-
-        else if (this.state == PlaneState.FIGHTING) {
-            this.fuel -= 1.5f;
-            this.fightTimer--;
-
-            if (this.target != null && this.ammo > 0) {
-                if (this.shotCooldown == 0) {
-                    shoot(this.target.x, this.target.y, board);
-                    this.ammo--;
-                    this.shotCooldown = this.cooldownDuration;
-                }
-            }
-
-            if (this.fightTimer <= 0) {
-                if (worthFlyingToBase()) {
-                    this.state = PlaneState.RETURNING_TO_BASE;
-                } else {
-                    this.state = PlaneState.FLYING;
-                }
-            }
-        }
-    }
-
-
-    private boolean isNearEnemy(Plane enemy) {
-        float dx = this.x - enemy.x;
-        float dy = this.y - enemy.y;
-        return Math.sqrt(dx * dx + dy * dy) < detectionRange;
-    }
-    public void setState(PlaneState state) {
-        this.state = state;
-    }
-
-    public float distanceToBase() {
-        float dx = this.baseX - this.x;
-        float dy = this.baseY - this.y;
-        return (float) Math.sqrt(dx * dx + dy * dy);
-    }
-
-    public boolean worthFlyingToBase() {
-        float turnsToBase = distanceToBase() / this.currentSpeed;
-        float fuelNeeded = turnsToBase * 1.0f;
-        return this.fuel <= fuelNeeded + 10;
     }
 
     public void move(Board board) {
-        updateTimers();
+        if (this.state == PlaneState.DEAD || this.state == PlaneState.PARKED) return;
 
-        if (this.hp <= 0 || this.fuel <= 0) {
-            this.currentSpeed = 0;
-            this.state = PlaneState.DEAD;
-            return;
-        }
-
-        if (this.fuel <= 10) {
-            if (tryEscapeOffMap()) return;
-        }
-
-        if (this.target != null && (this.state == PlaneState.FIGHTING || this.state == PlaneState.FLYING)) {
-            float dx = this.target.x - this.x;
-            float dy = this.target.y - this.y;
-            double distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance > 0) {
-                this.x += (dx / distance) * this.currentSpeed;
-                this.y += (dy / distance) * this.currentSpeed;
-            }
-        } else if (this.state == PlaneState.RETURNING_TO_BASE) {
+        if (this.state == PlaneState.RETURNING_TO_BASE) {
             float dx = this.baseX - this.x;
             float dy = this.baseY - this.y;
             double distance = Math.sqrt(dx * dx + dy * dy);
 
-
-            if (distance < 20.0) {
+            if (distance < 15.0) {
                 Airport airport = board.getAirportFor(this);
                 if (airport.canDock()) {
                     airport.dockPlane(this);
+                    return;
+                } else {
+                    tryEscapeOffMap();
+                    return;
                 }
-                return;
             }
+
             if (distance > 0) {
-                this.x += (dx / distance) * this.currentSpeed;
-                this.y += (dy / distance) * this.currentSpeed;
+                this.x += (float) ((dx / distance) * this.currentSpeed);
+                this.y += (float) ((dy / distance) * this.currentSpeed);
             }
-        } else if (this.state == PlaneState.EVADING) {
-            float dx = this.target != null ? this.target.x - this.x : 0;
-            float dy = this.target != null ? this.target.y - this.y : 0;
-            double distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance > 0) {
-                float perpX = (float) (-dy / distance);
-                float perpY = (float) (dx / distance);
-                this.x += perpX * this.currentSpeed;
-                this.y += perpY * this.currentSpeed;
+        } else {
+            if (this.target != null && this.target.state != PlaneState.DEAD) {
+                float dx = this.target.x - this.x;
+                float dy = this.target.y - this.y;
+                double distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance > 0) {
+                    this.x += (float) ((dx / distance) * this.currentSpeed);
+                    this.y += (float) ((dy / distance) * this.currentSpeed);
+                }
+            } else {
+                boolean isRed = (this instanceof RedPlane);
+                this.x += isRed ? this.currentSpeed : -this.currentSpeed;
             }
         }
     }
@@ -189,24 +120,29 @@ public abstract class Plane {
 
     public void shoot(float targetX, float targetY, Board board) {
         if (this.ammo > 0) {
-            board.addProjectile(new Projectile(this.x, this.y, targetX, targetY, this));
+            float dx = targetX - this.x;
+            float dy = targetY - this.y;
+            double dist = Math.sqrt(dx * dx + dy * dy);
+
+            float spawnX = this.x;
+            float spawnY = this.y;
+            if (dist > 0) {
+                spawnX += (float) ((dx / dist) * 16.0);
+                spawnY += (float) ((dy / dist) * 16.0);
+            }
+
+            board.addProjectile(new Projectile(spawnX, spawnY, targetX, targetY, this));
         }
     }
 
     public void takeDamage(int d) {
         this.hp -= d;
-        if (this.hp > 0) {
-            this.state = PlaneState.EVADING;
-            this.evadeTimer = 3;
+        if (this.hp <= 0) {
+            this.state = PlaneState.DEAD;
         }
     }
 
-    public boolean isLowOnFuel() {
-        return this.fuel < (this.maxFuel * 0.15f);
-    }
-
-    private void updateTimers() {
-        if (this.fightTimer > 0) this.fightTimer--;
-        if (this.evadeTimer > 0) this.evadeTimer--;
+    public void setState(PlaneState state) {
+        this.state = state;
     }
 }

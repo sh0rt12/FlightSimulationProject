@@ -3,12 +3,11 @@ import java.util.ArrayList;
 public class Simulation {
     private Board board;
     private int stepCount;
-    private int windLevel;
-    private int totalRedPlanes;
-    private int totalBluePlanes;
-    private int totalShotsFired;
-    private int redSpawnRate;
-    private int blueSpawnRate;
+    private int windLevel; // uzyjemy jak bedziemy robić system wiatru
+    private int totalRedPlanes; // to do metryk
+    private int totalBluePlanes; // to tez
+    private int totalShotsFired; // to tez
+
 
     public Simulation() {
         this.board = new Board(1000, 1000);

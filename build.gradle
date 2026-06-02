@@ -15,6 +15,7 @@ javafx {
 
 application {
     mainClass = 'SimulationApp'
+    applicationDefaultJvmArgs = ["--enable-native-access=ALL-UNNAMED"]
 }
 
 compileJava.options.encoding = 'UTF-8'
