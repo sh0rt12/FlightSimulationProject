@@ -34,7 +34,7 @@ public class Board {
         double minDistance = Double.MAX_VALUE;
 
         for (Plane p : planes) {
-            if (p.getClass() != currentPlane.getClass()) {
+            if (p.getClass() != currentPlane.getClass() && p.state != PlaneState.DEAD && p.state != PlaneState.PARKED) {
                 double dist = Math.sqrt(Math.pow(currentPlane.x - p.x, 2) + Math.pow(currentPlane.y - p.y, 2));
                 if (dist < minDistance) {
                     minDistance = dist;
@@ -49,7 +49,10 @@ public class Board {
         for (Projectile proj : new ArrayList<>(projectiles)) {
             for (Plane plane : new ArrayList<>(planes)) {
 
-                if (proj.getShooter().getClass() != plane.getClass() && plane.state != PlaneState.DEAD) {
+                if (proj.getShooter().getClass() != plane.getClass() &&
+                        plane.state != PlaneState.DEAD &&
+                        plane.state != PlaneState.PARKED) {
+
                     float dx = proj.x - plane.x;
                     float dy = proj.y - plane.y;
                     double dist = Math.sqrt(dx * dx + dy * dy);

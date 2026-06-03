@@ -25,6 +25,8 @@ public class Airport {
             p.state = PlaneState.PARKED;
             p.x = this.x;
             p.y = this.y;
+            p.currentSpeed = 0;
+
             parkedPlanes.put(p, 0);
         }
     }
@@ -32,14 +34,11 @@ public class Airport {
     public void processTurn() {
         List<Plane> readyToLaunch = new ArrayList<>();
 
+        parkedPlanes.replaceAll((plane, timeSpent) -> timeSpent + 1);
+
         for (Map.Entry<Plane, Integer> entry : parkedPlanes.entrySet()) {
-            Plane plane = entry.getKey();
-            int timeSpent = entry.getValue() + 1;
-
-            parkedPlanes.put(plane, timeSpent);
-
-            if (timeSpent >= maintenanceTime) {
-                readyToLaunch.add(plane);
+            if (entry.getValue() >= maintenanceTime) {
+                readyToLaunch.add(entry.getKey());
             }
         }
 
@@ -50,12 +49,15 @@ public class Airport {
 
     public void launchPlane(Plane p) {
         parkedPlanes.remove(p);
+
         p.fuel = p.maxFuel;
         p.ammo = p.maxAmmo;
         p.hp = 3;
-        p.state = PlaneState.FLYING;
-    }
 
-    public float getX() { return x; }
-    public float getY() { return y; }
+        p.state = PlaneState.FLYING;
+        p.currentSpeed = p.baseSpeed;
+
+        boolean isRed = (p instanceof RedPlane);
+        p.x += isRed ? 20.0f : -20.0f;
+    }
 }

@@ -34,7 +34,7 @@ public abstract class Plane {
     }
 
     public void step(Board board) {
-        if (this.state == PlaneState.DEAD) return;
+        if (this.state == PlaneState.DEAD || this.state == PlaneState.PARKED) return;
 
         if (this.shotCooldown > 0) {
             this.shotCooldown--;
