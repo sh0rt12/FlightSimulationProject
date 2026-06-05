@@ -111,9 +111,15 @@ public class SimulationPanel extends Pane {
 
         if (simulation.isWeatherActive()) {
             Image currentWindImage = null;
-            if (simulation.getCurrentWindType() == 1) currentWindImage = wind1Image;
-            else if (simulation.getCurrentWindType() == 2) currentWindImage = wind2Image;
-            else if (simulation.getCurrentWindType() == 3) currentWindImage = wind3Image;
+            int type = simulation.getCurrentWindType();
+
+            if (type == 1) {
+                currentWindImage = wind1Image;
+            } else if (type == 2) {
+                currentWindImage = wind2Image;
+            } else if (type == 3) {
+                currentWindImage = wind3Image;
+            }
 
             if (currentWindImage != null && !currentWindImage.isError()) {
                 weatherOffsetY += 15;

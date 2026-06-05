@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Simulation {
     private Board board;
@@ -33,11 +34,11 @@ public class Simulation {
                 System.out.println("--- Wiatr ustal (Krok: " + stepCount + ") ---");
             }
         } else {
-            if (random.nextInt(100) == 0) {
+            if (random.nextInt(50) == 0) {
                 weatherActive = true;
-                weatherTurnsLeft = 50;
-                currentWindType = random.nextInt(3) + 1;
-                System.out.println(">>> POJAWIL SIE WIATR! Typ: wiatr" + currentWindType + ".png (Krok: " + stepCount + ")");
+                weatherTurnsLeft = 25;
+                currentWindType = ThreadLocalRandom.current().nextInt(1, 4);
+                System.out.println(">>> POJAWIŁ SIĘ WIATR! Typ: wiatr" + currentWindType + ".png (Krok: " + stepCount + ")");
             }
         }
 
