@@ -12,6 +12,7 @@ import javafx.scene.text.Font;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Random;
 
 public class SimulationPanel extends Pane {
 
@@ -26,8 +27,12 @@ public class SimulationPanel extends Pane {
     private Image redJetFlying, redJetParked;
     private Image blueJetFlying, blueJetParked;
 
+    private Image wind1Image, wind2Image, wind3Image;
+
+    private double weatherOffsetY = 0;
+
     private final List<Explosion> explosions = new ArrayList<>();
-    private final java.util.Random random = new java.util.Random();
+    private final Random random = new Random();
 
     public SimulationPanel(Simulation simulation) {
         this.simulation = simulation;
@@ -48,9 +53,11 @@ public class SimulationPanel extends Pane {
             blueJetFlying = new Image(getClass().getResourceAsStream("/FIGHTER JET BLUE FLYING.png"));
             blueJetParked = new Image(getClass().getResourceAsStream("/FIGHTER JET BLUE PARKED.png"));
 
-            System.out.println("Graphics properly loaded");
+            wind1Image = new Image(getClass().getResourceAsStream("/wiatr1.png"));
+            wind2Image = new Image(getClass().getResourceAsStream("/wiatr2.png"));
+            wind3Image = new Image(getClass().getResourceAsStream("/wiatr3.png"));
+
         } catch (Exception e) {
-            System.out.println("Graphic loading error! " + e.getMessage());
         }
     }
 
@@ -101,6 +108,33 @@ public class SimulationPanel extends Pane {
             gc.setFill(Color.rgb(100, 160, 220, 0.7));
         }
         gc.fillRect(0, 0, 1000, 800);
+
+        if (simulation.isWeatherActive()) {
+            Image currentWindImage = null;
+            if (simulation.getCurrentWindType() == 1) currentWindImage = wind1Image;
+            else if (simulation.getCurrentWindType() == 2) currentWindImage = wind2Image;
+            else if (simulation.getCurrentWindType() == 3) currentWindImage = wind3Image;
+
+            if (currentWindImage != null && !currentWindImage.isError()) {
+                weatherOffsetY += 15;
+                if (weatherOffsetY > 800) {
+                    weatherOffsetY = 0;
+                }
+
+                gc.setGlobalAlpha(0.6);
+                gc.drawImage(currentWindImage, 0, weatherOffsetY, 1000, 800);
+                gc.drawImage(currentWindImage, 0, weatherOffsetY - 800, 1000, 800);
+                gc.setGlobalAlpha(1.0);
+            } else {
+                gc.setStroke(Color.rgb(150, 150, 255, 0.5));
+                gc.setLineWidth(2);
+                for(int i=0; i<100; i++) {
+                    double rx = random.nextDouble() * 1000;
+                    double ry = random.nextDouble() * 800;
+                    gc.strokeLine(rx, ry, rx - 10, ry + 20);
+                }
+            }
+        }
 
         if (redAirport != null && !redAirport.isError()) {
             gc.drawImage(redAirport, (50 * SCALE_X) - 50, (500 * SCALE_Y) - 50, 140, 150);

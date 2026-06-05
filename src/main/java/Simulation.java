@@ -1,13 +1,18 @@
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Simulation {
     private Board board;
     private int stepCount;
-    private int windLevel; // uzyjemy jak bedziemy robić system wiatru
-    private int totalRedPlanes; // to do metryk
-    private int totalBluePlanes; // to tez
-    private int totalShotsFired; // to tez
+    private int windLevel;
+    private int totalRedPlanes;
+    private int totalBluePlanes;
+    private int totalShotsFired;
 
+    private boolean weatherActive = false;
+    private int weatherTurnsLeft = 0;
+    private int currentWindType = 1;
+    private final Random random = new Random();
 
     public Simulation() {
         this.board = new Board(1000, 1000);
@@ -20,6 +25,21 @@ public class Simulation {
 
     public void step() {
         this.stepCount++;
+
+        if (weatherActive) {
+            weatherTurnsLeft--;
+            if (weatherTurnsLeft <= 0) {
+                weatherActive = false;
+                System.out.println("--- Wiatr ustal (Krok: " + stepCount + ") ---");
+            }
+        } else {
+            if (random.nextInt(100) == 0) {
+                weatherActive = true;
+                weatherTurnsLeft = 50;
+                currentWindType = random.nextInt(3) + 1;
+                System.out.println(">>> POJAWIL SIE WIATR! Typ: wiatr" + currentWindType + ".png (Krok: " + stepCount + ")");
+            }
+        }
 
         applyWindEffect();
 
@@ -46,13 +66,19 @@ public class Simulation {
         spawnPlanes();
     }
 
+    public boolean isWeatherActive() {
+        return weatherActive;
+    }
+
+    public int getCurrentWindType() {
+        return currentWindType;
+    }
+
     public void applyWindEffect() {
 
     }
 
     public void spawnPlanes() {
-        java.util.Random random = new java.util.Random();
-
         int currentRed = 0;
         int currentBlue = 0;
 
@@ -75,6 +101,7 @@ public class Simulation {
         if (currentBlue < targetCount) {
             this.totalBluePlanes++;
             float randomY = 50.0f + random.nextFloat() * 900.0f;
+
             BluePlane newBlue = new BluePlane(this.totalBluePlanes * 2, 900.0f, randomY);
             newBlue.setState(PlaneState.FLYING);
             board.addPlane(newBlue);
