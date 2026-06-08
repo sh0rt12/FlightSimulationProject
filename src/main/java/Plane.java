@@ -26,7 +26,7 @@ public abstract class Plane {
         this.state  = PlaneState.FLYING;
     }
 
-    // gettery w Airport.launchPlane()
+    // gettery do Airport.launchPlane()
     public float getBaseSpeed() { return stats.baseSpeed; }
     public int   getMaxAmmo()   { return stats.maxAmmo; }
     public float getMaxFuel()   { return stats.maxFuel; }
@@ -37,7 +37,7 @@ public abstract class Plane {
     public float getVx() { return this.lastVx; }
     public float getVy() { return this.lastVy; }
 
-    // logika stanow
+    //Logika stanów
     public void step(Board board) {
         if (this.state == PlaneState.DEAD || this.state == PlaneState.PARKED) return;
 
@@ -119,10 +119,10 @@ public abstract class Plane {
         if (this.status.evadeTimer >= this.stats.evadeDuration) {
             this.status.evadeTimer = 0;
             this.state = (this.target != null
-                         && this.target.state != PlaneState.DEAD
-                         && distanceTo(this.target) < this.stats.detectionRange)
-                         ? PlaneState.FIGHTING
-                         : PlaneState.FLYING;
+                    && this.target.state != PlaneState.DEAD
+                    && distanceTo(this.target) < this.stats.detectionRange)
+                    ? PlaneState.FIGHTING
+                    : PlaneState.FLYING;
             this.status.fightTimer = 0;
         }
     }
@@ -139,7 +139,7 @@ public abstract class Plane {
         this.status.evadeDirection = (Math.random() < 0.5) ? 1.0f : -1.0f;
     }
 
-    //System ruchu zależny od stanu samolotu
+    //logika ruchu w stanach
     public void move(Board board) {
         if (this.state == PlaneState.DEAD || this.state == PlaneState.PARKED) return;
 
@@ -213,6 +213,33 @@ public abstract class Plane {
             }
         }
 
+        // separacja — odpychanie od innych samolotów w pobliżu
+        float sepX = 0, sepY = 0;
+        final float SEP_RADIUS = 24.0f;
+
+        for (Plane other : board.getPlanes()) {
+            if (other == this || other.state == PlaneState.DEAD || other.state == PlaneState.PARKED) continue;
+            float dx   = this.x - other.x;
+            float dy   = this.y - other.y;
+            float dist = (float) Math.sqrt(dx * dx + dy * dy);
+            if (dist > 0 && dist < SEP_RADIUS) {
+
+                float strength = (SEP_RADIUS - dist) / SEP_RADIUS;
+                strength *= strength;
+                sepX += (dx / dist) * strength;
+                sepY += (dy / dist) * strength;
+            }
+        }
+
+        // separacja i ruch pomieszane dla plynnosci
+        float sepLen = (float) Math.sqrt(sepX * sepX + sepY * sepY);
+        if (sepLen > 0) {
+            moveX = moveX * 0.6f + (sepX / sepLen) * 0.4f;
+            moveY = moveY * 0.6f + (sepY / sepLen) * 0.4f;
+            float len = (float) Math.sqrt(moveX * moveX + moveY * moveY);
+            if (len > 0) { moveX /= len; moveY /= len; }
+        }
+
         this.lastVx = moveX;
         this.lastVy = moveY;
 
@@ -220,7 +247,7 @@ public abstract class Plane {
                 ? board.getSimulation().getWindMultiplier(this)
                 : 1.0;
 
-        // zmiany predkosci w zaleznosci od stanu
+        //predkosc w zaleznosci od stanu
         float speedMod = switch (this.state) {
             case FIGHTING -> 0.75f;
             case EVADING  -> 1.3f;
@@ -231,7 +258,7 @@ public abstract class Plane {
         this.y += (float) (moveY * this.status.currentSpeed * speedMod * windMod);
     }
 
-    // system atakowania - samolot atakujacy stara sie okrazyc samolot atakowany
+    // system walki - samoloty sie okrazaja
     private float[] orbitMove() {
         double orbitRadius  = this.stats.fightRange * 0.8;
         double anglePerStep = 0.08;
