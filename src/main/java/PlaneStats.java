@@ -1,4 +1,4 @@
-//NIEZMIENNE PARAMETRY SAMOLOTU PODCZAS SYMULACJI
+// NIEZMIENNE PARAMETRU SAMOLOTU
 
 public class PlaneStats {
     public final float baseSpeed;
@@ -6,20 +6,24 @@ public class PlaneStats {
     public final int   maxAmmo;
     public final float maxFuel;
     public final float detectionRange;
+    public final float fightRange;
     public final int   shotCooldown;
     public final int   evadeDuration;
     public final int   fightDuration;
+    public final int   evadeHpThreshold;
 
     public PlaneStats(float baseSpeed, int maxHp, int maxAmmo, float maxFuel,
-                      float detectionRange, int shotCooldown,
-                      int evadeDuration, int fightDuration) {
-        this.baseSpeed      = baseSpeed;
-        this.maxHp          = maxHp;
-        this.maxAmmo        = maxAmmo;
-        this.maxFuel        = maxFuel;
-        this.detectionRange = detectionRange;
-        this.shotCooldown   = shotCooldown;
-        this.evadeDuration  = evadeDuration;
-        this.fightDuration  = fightDuration;
+                      float detectionRange, float fightRange, int shotCooldown,
+                      int evadeDuration, int fightDuration, int evadeHpThreshold) {
+        this.baseSpeed        = baseSpeed;
+        this.maxHp            = maxHp;
+        this.maxAmmo          = maxAmmo;
+        this.maxFuel          = maxFuel;
+        this.detectionRange   = detectionRange;
+        this.fightRange       = fightRange;
+        this.shotCooldown     = shotCooldown;
+        this.evadeDuration    = evadeDuration;
+        this.fightDuration    = fightDuration;
+        this.evadeHpThreshold = evadeHpThreshold;
     }
 }
