@@ -13,10 +13,14 @@ public class Simulation {
     private boolean weatherActive = false;
     private int weatherTurnsLeft = 0;
     private int currentWindType = 1;
+    private int windDirection = 0;
     private final Random random = new Random();
 
     public Simulation() {
         this.board = new Board(1000, 1000);
+        this.board.setSimulation(this);
+        this.board.getAirports().add(new Airport(50.0f, 500.0f));
+        this.board.getAirports().add(new Airport(950.0f, 500.0f));
         this.stepCount = 0;
         this.windLevel = 1;
         this.totalRedPlanes = 0;
@@ -36,9 +40,10 @@ public class Simulation {
         } else {
             if (random.nextInt(50) == 0) {
                 weatherActive = true;
-                weatherTurnsLeft = 25;
+                weatherTurnsLeft = 50;
                 currentWindType = ThreadLocalRandom.current().nextInt(1, 4);
-                System.out.println(">>> POJAWIŁ SIĘ WIATR! Typ: wiatr" + currentWindType + ".png (Krok: " + stepCount + ")");
+                windDirection = ThreadLocalRandom.current().nextInt(0, 4);
+                System.out.println(">>> POJAWIL SIE WIATR! Typ: wiatr" + currentWindType + ".png, Kierunek: " + windDirection + " (Krok: " + stepCount + ")");
             }
         }
 
@@ -75,8 +80,36 @@ public class Simulation {
         return currentWindType;
     }
 
-    public void applyWindEffect() {
+    public int getWindDirection() {
+        return windDirection;
+    }
 
+    public double getWindMultiplier(Plane p) {
+        if (!weatherActive) {
+            return 1.0;
+        }
+
+        double penalty = 0.05;
+        if (currentWindType == 2) {
+            penalty = 0.10;
+        } else if (currentWindType == 3) {
+            penalty = 0.15;
+        }
+
+        boolean flyingWithWind = false;
+        if (windDirection == 0 && p.getVy() < 0) flyingWithWind = true;
+        else if (windDirection == 1 && p.getVy() > 0) flyingWithWind = true;
+        else if (windDirection == 2 && p.getVx() > 0) flyingWithWind = true;
+        else if (windDirection == 3 && p.getVx() < 0) flyingWithWind = true;
+
+        if (flyingWithWind) {
+            return 1.0 + penalty;
+        } else {
+            return 1.0 - penalty;
+        }
+    }
+
+    public void applyWindEffect() {
     }
 
     public void spawnPlanes() {

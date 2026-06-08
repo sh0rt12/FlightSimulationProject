@@ -2,40 +2,61 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Board {
-    private int width;
-    private int height;
-
+    private double width;
+    private double height;
     private List<Plane> planes;
     private List<Projectile> projectiles;
     private List<Airport> airports;
+    private Simulation simulation;
 
-    public Board(int width, int height) {
+    public Board(double width, double height) {
         this.width = width;
         this.height = height;
-
         this.planes = new ArrayList<>();
         this.projectiles = new ArrayList<>();
         this.airports = new ArrayList<>();
+    }
 
-        this.airports.add(new Airport(50.0f, 500.0f));
-        this.airports.add(new Airport(950.0f, 500.0f));
+    public void setSimulation(Simulation simulation) {
+        this.simulation = simulation;
+    }
+
+    public Simulation getSimulation() {
+        return this.simulation;
+    }
+
+    public List<Plane> getPlanes() {
+        return this.planes;
+    }
+
+    public List<Projectile> getProjectiles() {
+        return this.projectiles;
+    }
+
+    public List<Airport> getAirports() {
+        return this.airports;
     }
 
     public void addPlane(Plane p) {
-        planes.add(p);
+        this.planes.add(p);
     }
 
     public void addProjectile(Projectile p) {
-        projectiles.add(p);
+        this.projectiles.add(p);
     }
 
-    public Plane getClosestEnemy(Plane currentPlane) {
+    public Plane getClosestEnemy(Plane activePlane) {
         Plane closest = null;
         double minDistance = Double.MAX_VALUE;
+        boolean isActiveRed = (activePlane instanceof RedPlane);
 
         for (Plane p : planes) {
-            if (p.getClass() != currentPlane.getClass() && p.state != PlaneState.DEAD && p.state != PlaneState.PARKED) {
-                double dist = Math.sqrt(Math.pow(currentPlane.x - p.x, 2) + Math.pow(currentPlane.y - p.y, 2));
+            if (p.state == PlaneState.DEAD || p.state == PlaneState.PARKED) continue;
+            boolean isTargetRed = (p instanceof RedPlane);
+            if (isActiveRed != isTargetRed) {
+                double dx = p.x - activePlane.x;
+                double dy = p.y - activePlane.y;
+                double dist = Math.sqrt(dx * dx + dy * dy);
                 if (dist < minDistance) {
                     minDistance = dist;
                     closest = p;
@@ -45,47 +66,35 @@ public class Board {
         return closest;
     }
 
+    public Airport getAirportFor(Plane p) {
+        boolean isRed = (p instanceof RedPlane);
+        for (Airport a : airports) {
+            if (isRed && a.getColor().equals("RED")) return a;
+            if (!isRed && a.getColor().equals("BLUE")) return a;
+        }
+        if (!airports.isEmpty()) {
+            return airports.get(0);
+        }
+        return null;
+    }
+
     public void checkCollisions() {
         for (Projectile proj : new ArrayList<>(projectiles)) {
             for (Plane plane : new ArrayList<>(planes)) {
+                if (plane.state == PlaneState.DEAD || plane.state == PlaneState.PARKED) continue;
+                if (proj.getShooter() instanceof RedPlane && plane instanceof RedPlane) continue;
+                if (proj.getShooter() instanceof BluePlane && plane instanceof BluePlane) continue;
 
-                if (proj.getShooter().getClass() != plane.getClass() &&
-                        plane.state != PlaneState.DEAD &&
-                        plane.state != PlaneState.PARKED) {
+                double dx = proj.x - plane.x;
+                double dy = proj.y - plane.y;
+                double dist = Math.sqrt(dx * dx + dy * dy);
 
-                    float dx = proj.x - plane.x;
-                    float dy = proj.y - plane.y;
-                    double dist = Math.sqrt(dx * dx + dy * dy);
-
-                    if (dist < 12.0) {
-                        plane.takeDamage(1);
-                        projectiles.remove(proj);
-                        break;
-                    }
+                if (dist < 20.0) {
+                    plane.takeDamage(1);
+                    projectiles.remove(proj);
+                    break;
                 }
             }
         }
     }
-
-    public Airport getAirportFor(Plane p) {
-        if (p.baseX < 500) {
-            return airports.get(0);
-        } else {
-            return airports.get(1);
-        }
-    }
-
-    public List<Plane> getPlanes() {
-        return planes;
-    }
-
-    public List<Projectile> getProjectiles() {
-        return projectiles;
-    }
-
-    public List<Airport> getAirports() {
-        return airports;
-    }
-
 }
-

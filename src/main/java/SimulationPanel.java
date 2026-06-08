@@ -112,6 +112,7 @@ public class SimulationPanel extends Pane {
         if (simulation.isWeatherActive()) {
             Image currentWindImage = null;
             int type = simulation.getCurrentWindType();
+            int dir = simulation.getWindDirection();
 
             if (type == 1) {
                 currentWindImage = wind1Image;
@@ -127,9 +128,16 @@ public class SimulationPanel extends Pane {
                     weatherOffsetY = 0;
                 }
 
+                gc.save();
                 gc.setGlobalAlpha(0.6);
-                gc.drawImage(currentWindImage, 0, weatherOffsetY, 1000, 800);
-                gc.drawImage(currentWindImage, 0, weatherOffsetY - 800, 1000, 800);
+
+                gc.translate(500, 400);
+                gc.rotate(dir * 90);
+
+                gc.drawImage(currentWindImage, -500, -400 + weatherOffsetY, 1000, 800);
+                gc.drawImage(currentWindImage, -500, -400 + weatherOffsetY - 800, 1000, 800);
+
+                gc.restore();
                 gc.setGlobalAlpha(1.0);
             } else {
                 gc.setStroke(Color.rgb(150, 150, 255, 0.5));

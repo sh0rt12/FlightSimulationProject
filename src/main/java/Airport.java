@@ -16,6 +16,14 @@ public class Airport {
         this.y = y;
     }
 
+    public String getColor() {
+        if (this.x < 500) {
+            return "RED";
+        } else {
+            return "BLUE";
+        }
+    }
+
     public boolean canDock() {
         return parkedPlanes.size() < capacity;
     }

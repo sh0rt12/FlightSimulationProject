@@ -11,8 +11,8 @@ public abstract class Plane {
     protected int hp;
     protected Plane target;
     protected PlaneState state;
-    protected int fightTimer; // tego uzyjemy jak bedziemy robic bardziej zaawansowany system uników
-    protected int evadeTimer; // tego tez
+    protected int fightTimer;
+    protected int evadeTimer;
     protected float baseX;
     protected float baseY;
     protected float detectionRange;
@@ -20,6 +20,9 @@ public abstract class Plane {
     protected int fightDuration;
     protected int shotCooldown = 0;
     protected int cooldownDuration = 5;
+
+    protected float lastVx = 0;
+    protected float lastVy = 0;
 
     public Plane(int id, float x, float y, float baseX, float baseY, float detectionRange, int evadeDuration, int fightDuration) {
         this.id = id;
@@ -31,6 +34,14 @@ public abstract class Plane {
         this.evadeDuration = evadeDuration;
         this.fightDuration = fightDuration;
         this.state = PlaneState.FLYING;
+    }
+
+    public float getVx() {
+        return this.lastVx;
+    }
+
+    public float getVy() {
+        return this.lastVy;
     }
 
     public void step(Board board) {
@@ -64,6 +75,9 @@ public abstract class Plane {
     public void move(Board board) {
         if (this.state == PlaneState.DEAD || this.state == PlaneState.PARKED) return;
 
+        float moveX = 0;
+        float moveY = 0;
+
         if (this.state == PlaneState.RETURNING_TO_BASE) {
             float dx = this.baseX - this.x;
             float dy = this.baseY - this.y;
@@ -81,8 +95,8 @@ public abstract class Plane {
             }
 
             if (distance > 0) {
-                this.x += (float) ((dx / distance) * this.currentSpeed);
-                this.y += (float) ((dy / distance) * this.currentSpeed);
+                moveX = (float) (dx / distance);
+                moveY = (float) (dy / distance);
             }
         } else {
             if (this.target != null && this.target.state != PlaneState.DEAD) {
@@ -91,14 +105,26 @@ public abstract class Plane {
                 double distance = Math.sqrt(dx * dx + dy * dy);
 
                 if (distance > 0) {
-                    this.x += (float) ((dx / distance) * this.currentSpeed);
-                    this.y += (float) ((dy / distance) * this.currentSpeed);
+                    moveX = (float) (dx / distance);
+                    moveY = (float) (dy / distance);
                 }
             } else {
                 boolean isRed = (this instanceof RedPlane);
-                this.x += isRed ? this.currentSpeed : -this.currentSpeed;
+                moveX = isRed ? 1.0f : -1.0f;
+                moveY = 0.0f;
             }
         }
+
+        this.lastVx = moveX;
+        this.lastVy = moveY;
+
+        double windMod = 1.0;
+        if (board.getSimulation() != null) {
+            windMod = board.getSimulation().getWindMultiplier(this);
+        }
+
+        this.x += (float) (moveX * this.currentSpeed * windMod);
+        this.y += (float) (moveY * this.currentSpeed * windMod);
     }
 
     private boolean tryEscapeOffMap() {
@@ -108,6 +134,10 @@ public abstract class Plane {
         if (distance > 0) {
             float escapeX = (float) (-dx / distance);
             float escapeY = (float) (-dy / distance);
+
+            this.lastVx = escapeX;
+            this.lastVy = escapeY;
+
             this.x += escapeX * this.currentSpeed;
             this.y += escapeY * this.currentSpeed;
         }
