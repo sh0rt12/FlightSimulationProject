@@ -4,7 +4,6 @@ public class Projectile {
     private float vx;
     private float vy;
     private float speed = 15.0f;
-    private int damage = 1;
     private Plane shooter;
 
     public Projectile(float x, float y, float targetX, float targetY, Plane shooter) {

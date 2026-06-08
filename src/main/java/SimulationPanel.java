@@ -27,9 +27,9 @@ public class SimulationPanel extends Pane {
     private Image redJetFlying, redJetParked;
     private Image blueJetFlying, blueJetParked;
 
-    private Image wind1Image, wind2Image, wind3Image;
-
-    private double weatherOffsetY = 0;
+    private Image wind5Image;
+    private Image wind10Image;
+    private Image wind15Image;
 
     private final List<Explosion> explosions = new ArrayList<>();
     private final Random random = new Random();
@@ -53,11 +53,12 @@ public class SimulationPanel extends Pane {
             blueJetFlying = new Image(getClass().getResourceAsStream("/FIGHTER JET BLUE FLYING.png"));
             blueJetParked = new Image(getClass().getResourceAsStream("/FIGHTER JET BLUE PARKED.png"));
 
-            wind1Image = new Image(getClass().getResourceAsStream("/wiatr1.png"));
-            wind2Image = new Image(getClass().getResourceAsStream("/wiatr2.png"));
-            wind3Image = new Image(getClass().getResourceAsStream("/wiatr3.png"));
+            wind5Image = new Image(getClass().getResourceAsStream("/WIND 5%.gif"));
+            wind10Image = new Image(getClass().getResourceAsStream("/WIND 10%.gif"));
+            wind15Image = new Image(getClass().getResourceAsStream("/WIND 15%.gif"));
 
         } catch (Exception e) {
+            System.out.println("Graphic loading error: " + e.getMessage());
         }
     }
 
@@ -112,41 +113,31 @@ public class SimulationPanel extends Pane {
         if (simulation.isWeatherActive()) {
             Image currentWindImage = null;
             int type = simulation.getCurrentWindType();
-            int dir = simulation.getWindDirection();
 
             if (type == 1) {
-                currentWindImage = wind1Image;
+                currentWindImage = wind5Image;
             } else if (type == 2) {
-                currentWindImage = wind2Image;
+                currentWindImage = wind10Image;
             } else if (type == 3) {
-                currentWindImage = wind3Image;
+                currentWindImage = wind15Image;
             }
 
             if (currentWindImage != null && !currentWindImage.isError()) {
-                weatherOffsetY += 15;
-                if (weatherOffsetY > 800) {
-                    weatherOffsetY = 0;
-                }
+                // windDirection: 0=up, 1=down, 2=right(base), 3=left
+                double windRotation = switch (simulation.getWindDirection()) {
+                    case 0 -> -90.0;
+                    case 1 ->  90.0;
+                    case 2 ->   0.0;
+                    case 3 -> 180.0;
+                    default ->  0.0;
+                };
 
                 gc.save();
                 gc.setGlobalAlpha(0.6);
-
-                gc.translate(500, 400);
-                gc.rotate(dir * 90);
-
-                gc.drawImage(currentWindImage, -500, -400 + weatherOffsetY, 1000, 800);
-                gc.drawImage(currentWindImage, -500, -400 + weatherOffsetY - 800, 1000, 800);
-
+                gc.translate(500, 400);       // przesuń do środka canvasu
+                gc.rotate(windRotation);      // obróć
+                gc.drawImage(currentWindImage, -500, -400, 1000, 800); // rysuj względem (0,0)
                 gc.restore();
-                gc.setGlobalAlpha(1.0);
-            } else {
-                gc.setStroke(Color.rgb(150, 150, 255, 0.5));
-                gc.setLineWidth(2);
-                for(int i=0; i<100; i++) {
-                    double rx = random.nextDouble() * 1000;
-                    double ry = random.nextDouble() * 800;
-                    gc.strokeLine(rx, ry, rx - 10, ry + 20);
-                }
             }
         }
 
@@ -167,7 +158,7 @@ public class SimulationPanel extends Pane {
             double px = proj.x * SCALE_X;
             double py = proj.y * SCALE_Y;
 
-            boolean isRedShooter = (proj.getShooter() instanceof RedPlane);
+            boolean isRedShooter = proj.getShooter().isRedTeam();
             Color coreColor = isRedShooter ? Color.ORANGE : Color.CYAN;
             Color glowColor = isRedShooter ? Color.rgb(255, 100, 0, 0.3) : Color.rgb(0, 200, 255, 0.3);
 
@@ -209,6 +200,35 @@ public class SimulationPanel extends Pane {
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Segoe UI", 14));
         gc.fillText("Step: " + simulation.getStepCount(), 15, 25);
+
+        if (simulation.isWeatherActive()) {
+            int type = simulation.getCurrentWindType();
+            String windStrength = switch (type) {
+                case 1 -> "5%";
+                case 2 -> "10%";
+                case 3 -> "15%";
+                default -> "?";
+            };
+            String windDir = switch (simulation.getWindDirection()) {
+                case 0 -> "↑";
+                case 1 -> "↓";
+                case 2 -> "→";
+                case 3 -> "←";
+                default -> "?";
+            };
+
+            String windText = "WIND " + windDir + "  +" + windStrength;
+
+            gc.setFont(Font.font("Segoe UI", 16));
+
+            // cień dla czytelności
+            gc.setFill(Color.rgb(0, 0, 0, 0.6));
+            gc.fillText(windText, 16, 786);
+
+            // właściwy tekst w kolorze żółtym żeby się wyróżniał
+            gc.setFill(Color.rgb(255, 230, 80));
+            gc.fillText(windText, 15, 785);
+        }
     }
 
     private void drawPlane(Plane p) {
@@ -216,7 +236,7 @@ public class SimulationPanel extends Pane {
         double py = p.y * SCALE_Y;
 
         Image jetImage = null;
-        boolean isRed = (p instanceof RedPlane);
+        boolean isRed = p.isRedTeam();
 
         if (p.state == PlaneState.PARKED) {
             jetImage = isRed ? redJetParked : blueJetParked;
