@@ -17,6 +17,11 @@ public class Simulation {
     private int totalRedPlanes  = 0;
     private int totalBluePlanes = 0;
 
+    private int redShots = 0;
+    private int redHits = 0;
+    private int blueShots = 0;
+    private int blueHits = 0;
+
     public Simulation(SimulationConfig config) {
         this.config = config;
         this.board  = new Board(1000, 1000);
@@ -109,9 +114,9 @@ public class Simulation {
 
         boolean flyingWithWind =
                 (windDirection == 0 && p.getVy() < 0) ||
-                (windDirection == 1 && p.getVy() > 0) ||
-                (windDirection == 2 && p.getVx() > 0) ||
-                (windDirection == 3 && p.getVx() < 0);
+                        (windDirection == 1 && p.getVy() > 0) ||
+                        (windDirection == 2 && p.getVx() > 0) ||
+                        (windDirection == 3 && p.getVx() < 0);
 
         return flyingWithWind ? 1.0 + penalty : 1.0 - penalty;
     }
@@ -122,11 +127,27 @@ public class Simulation {
         else               totalBluePlanes++;
     }
 
-    // Gettery
+    public void incrementRedShots() { redShots++; }
+    public void incrementRedHits() { redHits++; }
+    public void incrementBlueShots() { blueShots++; }
+    public void incrementBlueHits() { blueHits++; }
+
+    public double getRedAccuracy() {
+        if (redShots == 0) return 0.0;
+        return ((double) redHits / redShots) * 100.0;
+    }
+
+    public double getBlueAccuracy() {
+        if (blueShots == 0) return 0.0;
+        return ((double) blueHits / blueShots) * 100.0;
+    }
+
     public Board            getBoard()            { return board; }
     public SimulationConfig getConfig()           { return config; }
     public int              getStepCount()        { return stepCount; }
     public boolean          isWeatherActive()     { return weatherActive; }
     public int              getCurrentWindType()  { return currentWindType; }
     public int              getWindDirection()    { return windDirection; }
+    public int              getTotalRedPlanes()  { return totalRedPlanes; }
+    public int              getTotalBluePlanes() { return totalBluePlanes; }
 }

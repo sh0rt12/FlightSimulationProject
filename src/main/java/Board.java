@@ -22,7 +22,17 @@ public class Board {
     public List<Airport>    getAirports()    { return airports; }
 
     public void addPlane(Plane p)           { planes.add(p); }
-    public void addProjectile(Projectile p) { projectiles.add(p); }
+
+    public void addProjectile(Projectile p) {
+        projectiles.add(p);
+        if (simulation != null) {
+            if (p.getShooter().isRedTeam()) {
+                simulation.incrementRedShots();
+            } else {
+                simulation.incrementBlueShots();
+            }
+        }
+    }
 
     public Plane getClosestEnemy(Plane activePlane) {
         Plane  closest     = null;
@@ -64,6 +74,13 @@ public class Board {
                 if (dist < 20.0) {
                     plane.takeDamage(1);
                     projectiles.remove(proj);
+                    if (simulation != null) {
+                        if (proj.getShooter().isRedTeam()) {
+                            simulation.incrementRedHits();
+                        } else {
+                            simulation.incrementBlueHits();
+                        }
+                    }
                     break;
                 }
             }

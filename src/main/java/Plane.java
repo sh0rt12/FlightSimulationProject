@@ -26,7 +26,6 @@ public abstract class Plane {
         this.state  = PlaneState.FLYING;
     }
 
-    // gettery do Airport.launchPlane()
     public float getBaseSpeed() { return stats.baseSpeed; }
     public int   getMaxAmmo()   { return stats.maxAmmo; }
     public float getMaxFuel()   { return stats.maxFuel; }
@@ -37,7 +36,6 @@ public abstract class Plane {
     public float getVx() { return this.lastVx; }
     public float getVy() { return this.lastVy; }
 
-    //Logika stanów
     public void step(Board board) {
         if (this.state == PlaneState.DEAD || this.state == PlaneState.PARKED) return;
 
@@ -73,14 +71,12 @@ public abstract class Plane {
 
         double dist = distanceTo(this.target);
 
-
         if (dist < this.stats.fightRange) {
             this.state             = PlaneState.FIGHTING;
             this.status.fightTimer = 0;
             this.status.orbitAngle = Math.atan2(this.y - this.target.y, this.x - this.target.x);
             return;
         }
-
 
         if (dist < this.stats.detectionRange && this.status.shotCooldown == 0) {
             shoot(this.target.x, this.target.y, board);
@@ -95,12 +91,10 @@ public abstract class Plane {
             return;
         }
 
-
         if (this.status.hitThisStep && this.status.hp <= this.stats.evadeHpThreshold) {
             enterEvade();
             return;
         }
-
 
         if (this.status.fightTimer >= this.stats.fightDuration) {
             this.state             = PlaneState.FLYING;
@@ -139,7 +133,6 @@ public abstract class Plane {
         this.status.evadeDirection = (Math.random() < 0.5) ? 1.0f : -1.0f;
     }
 
-    //logika ruchu w stanach
     public void move(Board board) {
         if (this.state == PlaneState.DEAD || this.state == PlaneState.PARKED) return;
 
@@ -196,8 +189,7 @@ public abstract class Plane {
                     this.state = PlaneState.RETURNING_TO_BASE;
                 }
             }
-            default -> { //flying
-
+            default -> {
                 if (this.target != null && this.target.state != PlaneState.DEAD) {
                     float  dx       = this.target.x - this.x;
                     float  dy       = this.target.y - this.y;
@@ -213,7 +205,6 @@ public abstract class Plane {
             }
         }
 
-        // separacja — odpychanie od innych samolotów w pobliżu
         float sepX = 0, sepY = 0;
         final float SEP_RADIUS = 24.0f;
 
@@ -223,7 +214,6 @@ public abstract class Plane {
             float dy   = this.y - other.y;
             float dist = (float) Math.sqrt(dx * dx + dy * dy);
             if (dist > 0 && dist < SEP_RADIUS) {
-
                 float strength = (SEP_RADIUS - dist) / SEP_RADIUS;
                 strength *= strength;
                 sepX += (dx / dist) * strength;
@@ -231,7 +221,6 @@ public abstract class Plane {
             }
         }
 
-        // separacja i ruch pomieszane dla plynnosci
         float sepLen = (float) Math.sqrt(sepX * sepX + sepY * sepY);
         if (sepLen > 0) {
             moveX = moveX * 0.6f + (sepX / sepLen) * 0.4f;
@@ -247,18 +236,24 @@ public abstract class Plane {
                 ? board.getSimulation().getWindMultiplier(this)
                 : 1.0;
 
-        //predkosc w zaleznosci od stanu
         float speedMod = switch (this.state) {
             case FIGHTING -> 0.75f;
             case EVADING  -> 1.3f;
             default       -> 1.0f;
         };
 
-        this.x += (float) (moveX * this.status.currentSpeed * speedMod * windMod);
-        this.y += (float) (moveY * this.status.currentSpeed * speedMod * windMod);
+        float nextX = this.x + (float) (moveX * this.status.currentSpeed * speedMod * windMod);
+        float nextY = this.y + (float) (moveY * this.status.currentSpeed * speedMod * windMod);
+
+        if (nextX < 30.0f) nextX = 30.0f;
+        if (nextX > 1220.0f) nextX = 1220.0f;
+        if (nextY < 30.0f) nextY = 30.0f;
+        if (nextY > 750.0f) nextY = 750.0f;
+
+        this.x = nextX;
+        this.y = nextY;
     }
 
-    // system walki - samoloty sie okrazaja
     private float[] orbitMove() {
         double orbitRadius  = this.stats.fightRange * 0.8;
         double anglePerStep = 0.08;
