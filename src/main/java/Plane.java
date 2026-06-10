@@ -62,7 +62,7 @@ public abstract class Plane {
 
     private boolean shouldReturnToBase() {
         if (this.status.ammo <= 0) return true;
-        if (this.status.hp == 1 && this.state != PlaneState.EVADING) return true;
+        if (this.stats.maxHp > 1 && this.status.hp == 1 && this.state != PlaneState.EVADING) return true;
         return false;
     }
 
