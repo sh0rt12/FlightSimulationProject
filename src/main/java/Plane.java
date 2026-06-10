@@ -26,6 +26,7 @@ public abstract class Plane {
         this.state  = PlaneState.FLYING;
     }
 
+    public int getId() { return id; }
     public float getBaseSpeed() { return stats.baseSpeed; }
     public int   getMaxAmmo()   { return stats.maxAmmo; }
     public float getMaxFuel()   { return stats.maxFuel; }
@@ -50,11 +51,10 @@ public abstract class Plane {
         }
 
         switch (this.state) {
-            case FLYING            -> stepFlying(board);
-            case FIGHTING          -> stepFighting(board);
-            case EVADING           -> stepEvading();
-            case RETURNING_TO_BASE -> stepReturning();
-            default                -> {}
+            case FLYING   -> stepFlying(board);
+            case FIGHTING -> stepFighting(board);
+            case EVADING  -> stepEvading();
+            default       -> {}
         }
 
         this.status.hitThisStep = false;
@@ -118,12 +118,6 @@ public abstract class Plane {
                     ? PlaneState.FIGHTING
                     : PlaneState.FLYING;
             this.status.fightTimer = 0;
-        }
-    }
-
-    private void stepReturning() {
-        if (this.status.hp == this.stats.maxHp && this.status.ammo > 0) {
-            this.state = PlaneState.FLYING;
         }
     }
 
@@ -245,10 +239,10 @@ public abstract class Plane {
         float nextX = this.x + (float) (moveX * this.status.currentSpeed * speedMod * windMod);
         float nextY = this.y + (float) (moveY * this.status.currentSpeed * speedMod * windMod);
 
-        if (nextX < 30.0f) nextX = 30.0f;
-        if (nextX > 1220.0f) nextX = 1220.0f;
-        if (nextY < 30.0f) nextY = 30.0f;
-        if (nextY > 750.0f) nextY = 750.0f;
+        if (nextX < 30.0f)    nextX = 30.0f;
+        if (nextX > 970.0f)   nextX = 970.0f;
+        if (nextY < 30.0f)    nextY = 30.0f;
+        if (nextY > 970.0f)   nextY = 970.0f;
 
         this.x = nextX;
         this.y = nextY;
@@ -302,7 +296,11 @@ public abstract class Plane {
         float spawnX = this.x + (dist > 0 ? (float) ((dx / dist) * 16.0) : 0);
         float spawnY = this.y + (dist > 0 ? (float) ((dy / dist) * 16.0) : 0);
 
-        board.addProjectile(new Projectile(spawnX, spawnY, targetX, targetY, this));
+        float projSpeed = (board.getSimulation() != null)
+                ? board.getSimulation().getConfig().getProjectileSpeed()
+                : 15.0f;
+
+        board.addProjectile(new Projectile(spawnX, spawnY, targetX, targetY, this, projSpeed));
         this.status.shotCooldown = this.stats.shotCooldown;
         this.status.ammo--;
     }

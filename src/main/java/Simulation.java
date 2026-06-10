@@ -29,6 +29,24 @@ public class Simulation {
         this.board.getAirports().add(new Airport(50.0f,  500.0f, config));
         this.board.getAirports().add(new Airport(950.0f, 500.0f, config));
         this.stepCount = 0;
+        initializePlanes();
+    }
+
+    private void initializePlanes() {
+        for (int i = 0; i < config.getInitialPlanesPerTeam(); i++) {
+            totalRedPlanes++;
+            float y = 50.0f + random.nextFloat() * 900.0f;
+            RedPlane red = new RedPlane(totalRedPlanes * 2 - 1, 100.0f, y, config);
+            red.setState(PlaneState.FLYING);
+            board.addPlane(red);
+        }
+        for (int i = 0; i < config.getInitialPlanesPerTeam(); i++) {
+            totalBluePlanes++;
+            float y = 50.0f + random.nextFloat() * 900.0f;
+            BluePlane blue = new BluePlane(totalBluePlanes * 2, 900.0f, y, config);
+            blue.setState(PlaneState.FLYING);
+            board.addPlane(blue);
+        }
     }
 
     public void step() {
@@ -119,12 +137,6 @@ public class Simulation {
                         (windDirection == 3 && p.getVx() < 0);
 
         return flyingWithWind ? 1.0 + penalty : 1.0 - penalty;
-    }
-
-    public void addTestPlane(Plane p) {
-        board.addPlane(p);
-        if (p.isRedTeam()) totalRedPlanes++;
-        else               totalBluePlanes++;
     }
 
     public void incrementRedShots() { redShots++; }

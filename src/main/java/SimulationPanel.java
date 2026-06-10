@@ -20,8 +20,8 @@ public class SimulationPanel extends Pane {
     private final Canvas canvas;
     private final GraphicsContext gc;
 
-    private static final double SCALE_X = 1000.0 / 1000.0;
-    private static final double SCALE_Y = 800.0 / 1000.0;
+    private static final double SCALE_X = 1.0;
+    private static final double SCALE_Y = 1.0;
 
     private Image redAirport, blueAirport;
     private Image redJetFlying, redJetParked;
@@ -36,7 +36,7 @@ public class SimulationPanel extends Pane {
 
     public SimulationPanel(Simulation simulation) {
         this.simulation = simulation;
-        this.canvas = new Canvas(1000, 800);
+        this.canvas = new Canvas(1000, 1000);
         this.gc = canvas.getGraphicsContext2D();
         getChildren().add(canvas);
 
@@ -95,11 +95,11 @@ public class SimulationPanel extends Pane {
     }
 
     private void draw() {
-        gc.clearRect(0, 0, 1000, 800);
+        gc.clearRect(0, 0, 1000, 1000);
 
         try {
             RadialGradient skyGradient = new RadialGradient(
-                    0, 0, 500, 400, 600, false, CycleMethod.NO_CYCLE,
+                    0, 0, 500, 500, 700, false, CycleMethod.NO_CYCLE,
                     new Stop(0.0, Color.rgb(135, 190, 245, 0.7)),
                     new Stop(0.6, Color.rgb(95, 150, 210, 0.7)),
                     new Stop(1.0, Color.rgb(65, 110, 160, 0.7))
@@ -108,7 +108,7 @@ public class SimulationPanel extends Pane {
         } catch (Exception e) {
             gc.setFill(Color.rgb(100, 160, 220, 0.7));
         }
-        gc.fillRect(0, 0, 1000, 800);
+        gc.fillRect(0, 0, 1000, 1000);
 
         if (simulation.isWeatherActive()) {
             Image currentWindImage = null;
@@ -134,9 +134,9 @@ public class SimulationPanel extends Pane {
 
                 gc.save();
                 gc.setGlobalAlpha(0.6);
-                gc.translate(500, 400);       // przesuń do środka canvasu
-                gc.rotate(windRotation);      // obróć
-                gc.drawImage(currentWindImage, -500, -400, 1000, 800); // rysuj względem (0,0)
+                gc.translate(500, 500);
+                gc.rotate(windRotation);
+                gc.drawImage(currentWindImage, -500, -500, 1000, 1000);
                 gc.restore();
             }
         }
@@ -196,39 +196,6 @@ public class SimulationPanel extends Pane {
                 it.remove();
             }
         }
-
-        gc.setFill(Color.WHITE);
-        gc.setFont(Font.font("Segoe UI", 14));
-        gc.fillText("Step: " + simulation.getStepCount(), 15, 25);
-
-        if (simulation.isWeatherActive()) {
-            int type = simulation.getCurrentWindType();
-            String windStrength = switch (type) {
-                case 1 -> "5%";
-                case 2 -> "10%";
-                case 3 -> "15%";
-                default -> "?";
-            };
-            String windDir = switch (simulation.getWindDirection()) {
-                case 0 -> "↑";
-                case 1 -> "↓";
-                case 2 -> "→";
-                case 3 -> "←";
-                default -> "?";
-            };
-
-            String windText = "WIND " + windDir + "  +" + windStrength;
-
-            gc.setFont(Font.font("Segoe UI", 16));
-
-            // cień dla czytelności
-            gc.setFill(Color.rgb(0, 0, 0, 0.6));
-            gc.fillText(windText, 16, 786);
-
-            // właściwy tekst w kolorze żółtym żeby się wyróżniał
-            gc.setFill(Color.rgb(255, 230, 80));
-            gc.fillText(windText, 15, 785);
-        }
     }
 
     private void drawPlane(Plane p) {
@@ -274,8 +241,8 @@ public class SimulationPanel extends Pane {
         }
 
         if (p.state == PlaneState.PARKED) {
-            px += (p.id % 4 - 1.5) * 16;
-            py += (p.id / 4 % 4 - 1.5) * 16;
+            px += (p.getId() % 4 - 1.5) * 16;
+            py += (p.getId() / 4 % 4 - 1.5) * 16;
         }
 
         double size = 32.0;
