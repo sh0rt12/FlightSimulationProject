@@ -14,6 +14,12 @@ public abstract class Plane {
     protected float lastVx = 0;
     protected float lastVy = 0;
 
+    // Paliwo: bazowe zużycie 0.5/krok daje ok. 20s lotu
+    private static final float FUEL_BURN_BASE   = 0.5f;
+    private static final float FUEL_BURN_FIGHT  = 1.0f;   // walka pali 2x szybciej
+    private static final float FUEL_BURN_EVADE  = 1.4f;   // unik pali najszybciej
+    private static final float FUEL_RETURN_RATIO = 0.18f; // powrót do bazy przy 18% paliwa
+
     public Plane(int id, float x, float y, float baseX, float baseY,
                  PlaneStats stats, PlaneStatus status) {
         this.id     = id;
@@ -42,6 +48,13 @@ public abstract class Plane {
 
         if (this.status.shotCooldown > 0) this.status.shotCooldown--;
 
+        burnFuel();
+
+        if (this.status.fuel <= 0) {
+            this.state = PlaneState.DEAD;
+            return;
+        }
+
         this.target = board.getClosestEnemy(this);
 
         if (shouldReturnToBase()) {
@@ -60,8 +73,19 @@ public abstract class Plane {
         this.status.hitThisStep = false;
     }
 
+    private void burnFuel() {
+        float burn = switch (this.state) {
+            case FIGHTING -> FUEL_BURN_FIGHT;
+            case EVADING  -> FUEL_BURN_EVADE;
+            default       -> FUEL_BURN_BASE;
+        };
+        this.status.fuel -= burn;
+        if (this.status.fuel < 0) this.status.fuel = 0;
+    }
+
     private boolean shouldReturnToBase() {
         if (this.status.ammo <= 0) return true;
+        if (this.status.fuel <= this.stats.maxFuel * FUEL_RETURN_RATIO) return true;
         if (this.stats.maxHp > 1 && this.status.hp == 1 && this.state != PlaneState.EVADING) return true;
         return false;
     }

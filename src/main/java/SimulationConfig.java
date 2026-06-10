@@ -7,6 +7,7 @@ public class SimulationConfig {
     private float baseSpeed            = 8.5f;
     private int   startingHp           = 3;
     private float projectileSpeed      = 18.0f;
+    private float fuelCapacity         = 100.0f;
     private int   airportCapacity      = 5;
     private int   maintenanceTime      = 40;
     private float speedVariance        = 2.0f;
@@ -34,6 +35,7 @@ public class SimulationConfig {
     public int   getFightDuration()        { return fightDuration; }
     public int   getEvadeHpThreshold()     { return evadeHpThreshold; }
     public float getProjectileSpeed()      { return projectileSpeed; }
+    public float getFuelCapacity()         { return fuelCapacity; }
     public int   getAirportCapacity()      { return airportCapacity; }
     public int   getMaintenanceTime()      { return maintenanceTime; }
 
@@ -45,4 +47,5 @@ public class SimulationConfig {
     public void setDetectionRangeMax(float v)   { this.detectionRangeMax    = v; }
     public void setFightRange(float v)          { this.fightRange           = v; }
     public void setProjectileSpeed(float v)     { this.projectileSpeed      = v; }
+    public void setFuelCapacity(float v)        { this.fuelCapacity         = v; }
 }

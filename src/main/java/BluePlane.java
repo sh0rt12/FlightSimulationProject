@@ -13,14 +13,15 @@ public class BluePlane extends Plane {
         float range = config.getDetectionRangeMin()
                     + random.nextFloat() * (config.getDetectionRangeMax() - config.getDetectionRangeMin());
         return new PlaneStats(speed, config.getStartingHp(), config.getStartingAmmo(),
-                              300.0f, range, config.getFightRange(), config.getShotCooldown(),
+                              config.getFuelCapacity(), range, config.getFightRange(), config.getShotCooldown(),
                               config.getEvadeDuration(), config.getFightDuration(),
                               config.getEvadeHpThreshold());
     }
 
     private static PlaneStatus buildStatus(SimulationConfig config) {
         float speed = config.getBaseSpeed() + random.nextFloat() * config.getSpeedVariance();
-        return new PlaneStatus(config.getStartingHp(), config.getStartingAmmo(), 180.0f, speed, 0);
+        return new PlaneStatus(config.getStartingHp(), config.getStartingAmmo(),
+                               config.getFuelCapacity(), speed, 0);
     }
 
     @Override

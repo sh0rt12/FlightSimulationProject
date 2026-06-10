@@ -44,9 +44,10 @@ public class SimulationApp extends Application {
         TextField speedInput     = addRow(grid, 2, "Szybkość samolotów:",            String.valueOf(config.getBaseSpeed()));
         TextField hpInput        = addRow(grid, 3, "Punkty zdrowia (HP):",           String.valueOf(config.getStartingHp()));
         TextField projSpeedInput = addRow(grid, 4, "Szybkość pocisków:",             String.valueOf(config.getProjectileSpeed()));
-        TextField detectMinInput = addRow(grid, 5, "Zasięg wzroku (min):",           String.valueOf(config.getDetectionRangeMin()));
-        TextField detectMaxInput = addRow(grid, 6, "Zasięg wzroku (max):",           String.valueOf(config.getDetectionRangeMax()));
-        TextField fightInput     = addRow(grid, 7, "Zasięg walki:",                  String.valueOf(config.getFightRange()));
+        TextField fuelInput      = addRow(grid, 5, "Pojemność paliwa:",              String.valueOf(config.getFuelCapacity()));
+        TextField detectMinInput = addRow(grid, 6, "Zasięg wzroku (min):",           String.valueOf(config.getDetectionRangeMin()));
+        TextField detectMaxInput = addRow(grid, 7, "Zasięg wzroku (max):",           String.valueOf(config.getDetectionRangeMax()));
+        TextField fightInput     = addRow(grid, 8, "Zasięg walki:",                  String.valueOf(config.getFightRange()));
 
         Button startButton = new Button("URUCHOM");
         startButton.setFont(Font.font("Arial", FontWeight.BOLD, 14));
@@ -59,6 +60,7 @@ public class SimulationApp extends Application {
                 config.setBaseSpeed(Float.parseFloat(speedInput.getText()));
                 config.setStartingHp(Integer.parseInt(hpInput.getText()));
                 config.setProjectileSpeed(Float.parseFloat(projSpeedInput.getText()));
+                config.setFuelCapacity(Float.parseFloat(fuelInput.getText()));
                 config.setDetectionRangeMin(Float.parseFloat(detectMinInput.getText()));
                 config.setDetectionRangeMax(Float.parseFloat(detectMaxInput.getText()));
                 config.setFightRange(Float.parseFloat(fightInput.getText()));
@@ -69,7 +71,7 @@ public class SimulationApp extends Application {
         });
 
         root.getChildren().addAll(title, grid, startButton);
-        return new Scene(root, 450, 520);
+        return new Scene(root, 450, 560);
     }
 
     private TextField addRow(GridPane grid, int row, String labelText, String defaultValue) {
