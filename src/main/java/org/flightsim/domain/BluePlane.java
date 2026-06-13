@@ -1,3 +1,5 @@
+package org.flightsim.domain;
+
 import java.util.Random;
 
 public class BluePlane extends Plane {

@@ -1,18 +1,13 @@
+package org.flightsim.domain;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Board {
-    private final double width;
-    private final double height;
     private final List<Plane>      planes      = new ArrayList<>();
     private final List<Projectile> projectiles = new ArrayList<>();
     private final List<Airport>    airports    = new ArrayList<>();
     private Simulation simulation;
-
-    public Board(double width, double height) {
-        this.width  = width;
-        this.height = height;
-    }
 
     public void setSimulation(Simulation simulation) { this.simulation = simulation; }
     public Simulation getSimulation()                { return this.simulation; }

@@ -14,7 +14,7 @@ javafx {
 }
 
 application {
-    mainClass = 'SimulationApp'
+    mainClass = 'org.flightsim.Main'
     applicationDefaultJvmArgs = ["--enable-native-access=ALL-UNNAMED"]
 }
 

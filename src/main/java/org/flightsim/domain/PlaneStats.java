@@ -1,3 +1,5 @@
+package org.flightsim.domain;
+
 // NIEZMIENNE PARAMETRU SAMOLOTU
 
 public class PlaneStats {

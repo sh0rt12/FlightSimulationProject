@@ -1,30 +1,30 @@
+package org.flightsim.domain;
+
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * Silnik symulacji: orkiestruje pojedynczy krok (ruch samolotów i pocisków,
+ * obsługa lotnisk, kolizje, usuwanie i dosypywanie samolotów). Pogodę prowadzi
+ * {@link WeatherSystem}, a statystyki celności {@link BattleStats}.
+ */
 public class Simulation {
     private final Board            board;
     private final SimulationConfig config;
     private final Random           random = new Random();
 
-    private int stepCount;
+    private final WeatherSystem weather;
+    private final BattleStats   stats = new BattleStats();
 
-    private boolean weatherActive   = false;
-    private int     weatherTurnsLeft = 0;
-    private int     currentWindType  = 1;
-    private int     windDirection    = 0;
+    private int stepCount;
 
     private int totalRedPlanes  = 0;
     private int totalBluePlanes = 0;
 
-    private int redShots = 0;
-    private int redHits = 0;
-    private int blueShots = 0;
-    private int blueHits = 0;
-
     public Simulation(SimulationConfig config) {
-        this.config = config;
-        this.board  = new Board(1000, 1000);
+        this.config  = config;
+        this.weather = new WeatherSystem(config);
+        this.board   = new Board();
         this.board.setSimulation(this);
         this.board.getAirports().add(new Airport(50.0f,  500.0f, config));
         this.board.getAirports().add(new Airport(950.0f, 500.0f, config));
@@ -52,7 +52,7 @@ public class Simulation {
     public void step() {
         this.stepCount++;
 
-        updateWeather();
+        weather.update(stepCount);
 
         for (Plane plane : new ArrayList<>(board.getPlanes())) {
             if (plane.state != PlaneState.DEAD) {
@@ -74,23 +74,6 @@ public class Simulation {
         board.getProjectiles().removeIf(p -> p.isOutOfBoard(1000, 1000));
 
         spawnPlanes();
-    }
-
-    private void updateWeather() {
-        if (weatherActive) {
-            weatherTurnsLeft--;
-            if (weatherTurnsLeft <= 0) {
-                weatherActive = false;
-                System.out.println("Wind died down (step: " + stepCount + ")");
-            }
-        } else if (random.nextInt(config.getWindSpawnChance()) == 0) {
-            weatherActive    = true;
-            weatherTurnsLeft = config.getWindDuration();
-            currentWindType  = ThreadLocalRandom.current().nextInt(1, 4);
-            windDirection    = ThreadLocalRandom.current().nextInt(0, 4);
-            System.out.println("Wind appeared! Type: " + currentWindType
-                    + ", Direction: " + windDirection + " (step: " + stepCount + ")");
-        }
     }
 
     private void spawnPlanes() {
@@ -121,45 +104,23 @@ public class Simulation {
         }
     }
 
-    public double getWindMultiplier(Plane p) {
-        if (!weatherActive) return 1.0;
+    // --- Pogoda (delegacja do WeatherSystem) ---
+    public double  getWindMultiplier(Plane p) { return weather.getWindMultiplier(p); }
+    public boolean isWeatherActive()          { return weather.isActive(); }
+    public int     getCurrentWindType()       { return weather.getWindType(); }
+    public int     getWindDirection()         { return weather.getWindDirection(); }
 
-        double penalty = switch (currentWindType) {
-            case 2  -> 0.10;
-            case 3  -> 0.15;
-            default -> 0.05;
-        };
+    // --- Statystyki (delegacja do BattleStats) ---
+    public void   incrementRedShots()  { stats.incrementRedShots(); }
+    public void   incrementRedHits()   { stats.incrementRedHits(); }
+    public void   incrementBlueShots() { stats.incrementBlueShots(); }
+    public void   incrementBlueHits()  { stats.incrementBlueHits(); }
+    public double getRedAccuracy()     { return stats.getRedAccuracy(); }
+    public double getBlueAccuracy()    { return stats.getBlueAccuracy(); }
 
-        boolean flyingWithWind =
-                (windDirection == 0 && p.getVy() < 0) ||
-                        (windDirection == 1 && p.getVy() > 0) ||
-                        (windDirection == 2 && p.getVx() > 0) ||
-                        (windDirection == 3 && p.getVx() < 0);
-
-        return flyingWithWind ? 1.0 + penalty : 1.0 - penalty;
-    }
-
-    public void incrementRedShots() { redShots++; }
-    public void incrementRedHits() { redHits++; }
-    public void incrementBlueShots() { blueShots++; }
-    public void incrementBlueHits() { blueHits++; }
-
-    public double getRedAccuracy() {
-        if (redShots == 0) return 0.0;
-        return ((double) redHits / redShots) * 100.0;
-    }
-
-    public double getBlueAccuracy() {
-        if (blueShots == 0) return 0.0;
-        return ((double) blueHits / blueShots) * 100.0;
-    }
-
-    public Board            getBoard()            { return board; }
-    public SimulationConfig getConfig()           { return config; }
-    public int              getStepCount()        { return stepCount; }
-    public boolean          isWeatherActive()     { return weatherActive; }
-    public int              getCurrentWindType()  { return currentWindType; }
-    public int              getWindDirection()    { return windDirection; }
+    public Board            getBoard()           { return board; }
+    public SimulationConfig getConfig()          { return config; }
+    public int              getStepCount()       { return stepCount; }
     public int              getTotalRedPlanes()  { return totalRedPlanes; }
     public int              getTotalBluePlanes() { return totalBluePlanes; }
 }

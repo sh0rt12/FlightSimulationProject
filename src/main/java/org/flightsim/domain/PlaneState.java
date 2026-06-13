@@ -1,3 +1,5 @@
+package org.flightsim.domain;
+
 public enum PlaneState {
     FLYING,
     EVADING,

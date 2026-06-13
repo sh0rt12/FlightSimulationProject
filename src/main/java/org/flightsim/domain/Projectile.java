@@ -1,3 +1,5 @@
+package org.flightsim.domain;
+
 public class Projectile {
     public float x;
     public float y;

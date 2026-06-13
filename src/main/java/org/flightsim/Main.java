@@ -1,3 +1,7 @@
+package org.flightsim;
+
+import org.flightsim.ui.SimulationApp;
+
 public class Main {
     public static void main(String[] args) {
         SimulationApp.main(args);

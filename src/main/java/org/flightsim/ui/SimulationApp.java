@@ -1,3 +1,7 @@
+package org.flightsim.ui;
+
+import org.flightsim.domain.Simulation;
+import org.flightsim.domain.SimulationConfig;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

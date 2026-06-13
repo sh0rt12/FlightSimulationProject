@@ -1,3 +1,7 @@
+package org.flightsim.ui;
+
+import org.flightsim.domain.Plane;
+import org.flightsim.domain.Simulation;
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

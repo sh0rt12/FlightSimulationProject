@@ -1,3 +1,5 @@
+package org.flightsim.domain;
+
 public class SimulationConfig {
     private int   initialPlanesPerTeam = 7;
     private int   targetPlanesPerTeam  = 7;

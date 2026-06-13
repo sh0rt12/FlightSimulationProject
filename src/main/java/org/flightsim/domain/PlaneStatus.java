@@ -1,3 +1,5 @@
+package org.flightsim.domain;
+
 //ZMIENNE ELEMENTY SAMOLOTU W TRAKCIE SYMULACJI
 
 public class PlaneStatus {
