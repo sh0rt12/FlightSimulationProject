@@ -2,11 +2,8 @@ package org.flightsim.ui;
 
 import javafx.scene.image.Image;
 
-/**
- * Ładuje i udostępnia grafiki symulacji (lotniska, samoloty, wiatr).
- * Brakujące pliki nie przerywają działania — odpowiednie obrazki pozostają null,
- * a kod rysujący korzysta wtedy z prostych kształtów zastępczych.
- */
+// Ładuje wszystkie grafiki przy starcie. Jak brakuje jakiegoś pliku PNG/GIF,
+// kod rysujący automatycznie przełącza się na zastępcze kształty — gra nadal działa.
 public class GameAssets {
 
     private Image redAirport, blueAirport;
@@ -24,6 +21,7 @@ public class GameAssets {
             blueJetFlying = load("/FIGHTER JET BLUE FLYING.png");
             blueJetParked = load("/FIGHTER JET BLUE PARKED.png");
 
+            // animowane GIFy wiatru — 3 poziomy siły
             wind5Image    = load("/WIND 5%.gif");
             wind10Image   = load("/WIND 10%.gif");
             wind15Image   = load("/WIND 15%.gif");
@@ -40,13 +38,13 @@ public class GameAssets {
     public Image getRedAirport()  { return redAirport; }
     public Image getBlueAirport() { return blueAirport; }
 
-    /** Sylwetka samolotu zależna od drużyny i tego, czy stoi w bazie. */
+    // Zwraca odpowiednią grafikę samolotu — zależy od drużyny i czy stoi w bazie
     public Image jet(boolean red, boolean parked) {
         if (parked) return red ? redJetParked : blueJetParked;
         return red ? redJetFlying : blueJetFlying;
     }
 
-    /** Nakładka wiatru dla danego typu (1=5%, 2=10%, 3=15%); null gdy brak. */
+    // type: 1=słaby, 2=średni, 3=silny wiatr; null gdy nieznany
     public Image windImage(int type) {
         return switch (type) {
             case 1  -> wind5Image;

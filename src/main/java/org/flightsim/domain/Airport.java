@@ -5,11 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// Lotnisko przyjmuje samoloty wracające z misji, serwisuje je (HP/amunicja/paliwo)
+// i wypuszcza z powrotem. Mapa przechowuje czas spędzony w hangarze.
 public class Airport {
     private final float x;
     private final float y;
-    private final int capacity;
-    private final int maintenanceTime;
+    private final int capacity;        // max samolotów jednocześnie
+    private final int maintenanceTime; // kroków do pełnego serwisu
 
     private final Map<Plane, Integer> parkedPlanes = new HashMap<>();
 
@@ -20,6 +22,7 @@ public class Airport {
         this.maintenanceTime = config.getMaintenanceTime();
     }
 
+    // Lotnisko lewe (x<500) należy do czerwonych
     public boolean isRedAirport() {
         return this.x < 500;
     }
@@ -38,6 +41,7 @@ public class Airport {
     }
 
     public void processTurn() {
+        // zwiększamy licznik dla wszystkich zaparkowanych
         parkedPlanes.replaceAll((plane, timeSpent) -> timeSpent + 1);
 
         List<Plane> readyToLaunch = new ArrayList<>();
@@ -50,6 +54,7 @@ public class Airport {
         readyToLaunch.forEach(this::launchPlane);
     }
 
+    // Pełny restart samolotu — HP, amunicja, paliwo wracają do max
     private void launchPlane(Plane p) {
         parkedPlanes.remove(p);
 
@@ -58,6 +63,7 @@ public class Airport {
         p.status.hp           = p.getMaxHp();
         p.state               = PlaneState.FLYING;
         p.setCurrentSpeed(p.getBaseSpeed());
+        // lekkie odsunięcie od lotniska żeby nie kręcił się w miejscu
         p.x += p.isRedTeam() ? 20.0f : -20.0f;
     }
 }

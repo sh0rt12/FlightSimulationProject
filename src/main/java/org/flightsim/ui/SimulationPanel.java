@@ -17,11 +17,8 @@ import javafx.scene.text.Font;
 import java.util.List;
 import java.util.ArrayList;
 
-/**
- * Płótno symulacji: pętla animacji oraz rysowanie sceny (niebo, wiatr, lotniska,
- * pociski, samoloty, wybuchy). Szczegóły rysowania samolotów i grafiki są
- * delegowane do {@link PlaneRenderer} i {@link GameAssets}.
- */
+// Główne płótno gry. Pętla animacji odświeża się ~10 razy na sekundę (100ms),
+// co jest kompromisem między płynnością a obciążeniem CPU.
 public class SimulationPanel extends Pane {
 
     private static final double SCALE_X = 1.0;
@@ -45,6 +42,7 @@ public class SimulationPanel extends Pane {
     public void startLoop() {
         AnimationTimer timer = new AnimationTimer() {
             private long lastUpdate = 0;
+            // krok symulacji co 100ms, rysowanie przy każdej klatce
             private final long nanoInterval = 100_000_000;
 
             @Override
@@ -59,6 +57,7 @@ public class SimulationPanel extends Pane {
 
                     simulation.step();
 
+                    // samoloty które zniknęły po stepie dostają animację wybuchu
                     for (Plane p : planesBefore) {
                         if (!simulation.getBoard().getPlanes().contains(p)) {
                             explosions.add(new Explosion(p.x * SCALE_X, p.y * SCALE_Y));
@@ -86,9 +85,11 @@ public class SimulationPanel extends Pane {
             planeRenderer.draw(gc, p);
         }
 
+        // removeIf usuwa wybuchy które same zgłosiły koniec animacji
         explosions.removeIf(exp -> exp.drawAndAdvance(gc));
     }
 
+    // Gradient nieba — RadialGradient wygląda ładniej niż jednolity kolor
     private void drawSky() {
         try {
             RadialGradient skyGradient = new RadialGradient(
@@ -104,13 +105,13 @@ public class SimulationPanel extends Pane {
         gc.fillRect(0, 0, 1000, 1000);
     }
 
+    // Nakładka wiatru — obrót GIFa zgodnie z kierunkiem
     private void drawWind() {
         if (!simulation.isWeatherActive()) return;
 
         Image windImage = assets.windImage(simulation.getCurrentWindType());
         if (windImage == null || windImage.isError()) return;
 
-        // windDirection: 0=up, 1=down, 2=right(base), 3=left
         double windRotation = switch (simulation.getWindDirection()) {
             case 0 -> -90.0;
             case 1 ->  90.0;
@@ -143,6 +144,7 @@ public class SimulationPanel extends Pane {
         }
     }
 
+    // Pocisk rysujemy jako linię z "ogonkiem" — wygląda jak ślad świetlny
     private void drawProjectiles() {
         for (Projectile proj : simulation.getBoard().getProjectiles()) {
             double px = proj.x * SCALE_X;
@@ -165,6 +167,7 @@ public class SimulationPanel extends Pane {
         }
     }
 
+    // Fallback lotniska gdy brak grafiki — zwykły prostokąt z etykietą
     private void drawBaseFallback(double x, double y, Color color, String name) {
         gc.setStroke(color);
         gc.setLineWidth(2);

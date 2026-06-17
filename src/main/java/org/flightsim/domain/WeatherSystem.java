@@ -3,10 +3,8 @@ package org.flightsim.domain;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-/**
- * System pogody: losowo pojawiający się i zanikający wiatr o określonym typie
- * (sile) i kierunku. Wpływa na prędkość samolotów przez {@link #getWindMultiplier}.
- */
+// Losowy system wiatru — pojawia się rzadko, trwa określoną liczbę kroków
+// i wpływa na prędkość samolotów zależnie od kierunku lotu.
 public class WeatherSystem {
 
     private final SimulationConfig config;
@@ -14,8 +12,8 @@ public class WeatherSystem {
 
     private boolean active        = false;
     private int     turnsLeft     = 0;
-    private int     windType      = 1;
-    private int     windDirection = 0;
+    private int     windType      = 1;  // 1=słaby, 2=średni, 3=silny
+    private int     windDirection = 0;  // 0=północ, 1=południe, 2=wschód, 3=zachód
 
     public WeatherSystem(SimulationConfig config) {
         this.config = config;
@@ -38,6 +36,7 @@ public class WeatherSystem {
         }
     }
 
+    // Samolot lecący z wiatrem dostaje bonus, pod wiatr dostaje karę
     public double getWindMultiplier(Plane p) {
         if (!active) return 1.0;
 

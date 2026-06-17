@@ -3,11 +3,8 @@ package org.flightsim.domain;
 import java.util.ArrayList;
 import java.util.Random;
 
-/**
- * Silnik symulacji: orkiestruje pojedynczy krok (ruch samolotów i pocisków,
- * obsługa lotnisk, kolizje, usuwanie i dosypywanie samolotów). Pogodę prowadzi
- * {@link WeatherSystem}, a statystyki celności {@link BattleStats}.
- */
+// Główny silnik — orkiestruje jeden krok symulacji.
+// Pogoda i statystyki są w osobnych klasach żeby tu nie było bałaganu.
 public class Simulation {
     private final Board            board;
     private final SimulationConfig config;
@@ -18,6 +15,7 @@ public class Simulation {
 
     private int stepCount;
 
+    // Łączna liczba stworzonych samolotów (wliczając respawny) — do statystyk
     private int totalRedPlanes  = 0;
     private int totalBluePlanes = 0;
 
@@ -26,6 +24,7 @@ public class Simulation {
         this.weather = new WeatherSystem(config);
         this.board   = new Board();
         this.board.setSimulation(this);
+        // lotniska na stałych pozycjach po lewej i prawej stronie
         this.board.getAirports().add(new Airport(50.0f,  500.0f, config));
         this.board.getAirports().add(new Airport(950.0f, 500.0f, config));
         this.stepCount = 0;
@@ -54,6 +53,7 @@ public class Simulation {
 
         weather.update(stepCount);
 
+        // iterujemy po kopii listy bo step() może modyfikować stan samolotów
         for (Plane plane : new ArrayList<>(board.getPlanes())) {
             if (plane.state != PlaneState.DEAD) {
                 plane.step(board);
@@ -73,9 +73,10 @@ public class Simulation {
         board.getPlanes().removeIf(p -> p.state == PlaneState.DEAD);
         board.getProjectiles().removeIf(p -> p.isOutOfBoard(1000, 1000));
 
-        spawnPlanes();
+        spawnPlanes(); // uzupełnia do docelowej liczby jeśli ktoś zginął
     }
 
+    // Respawn — jedna maszyna na krok żeby nie było nagłego "teleportu" całej floty
     private void spawnPlanes() {
         int currentRed  = 0;
         int currentBlue = 0;
@@ -104,13 +105,13 @@ public class Simulation {
         }
     }
 
-    // --- Pogoda (delegacja do WeatherSystem) ---
+    // Delegacje do WeatherSystem
     public double  getWindMultiplier(Plane p) { return weather.getWindMultiplier(p); }
     public boolean isWeatherActive()          { return weather.isActive(); }
     public int     getCurrentWindType()       { return weather.getWindType(); }
     public int     getWindDirection()         { return weather.getWindDirection(); }
 
-    // --- Statystyki (delegacja do BattleStats) ---
+    // Delegacje do BattleStats
     public void   incrementRedShots()  { stats.incrementRedShots(); }
     public void   incrementRedHits()   { stats.incrementRedHits(); }
     public void   incrementBlueShots() { stats.incrementBlueShots(); }

@@ -13,6 +13,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
+// Panel po prawej stronie — statystyki obu drużyn aktualizowane co klatkę.
+// Pasek postępu pokazuje ile samolotów zostało z docelowej liczby.
 public class StatsPanel extends VBox {
     private final Simulation simulation;
 
@@ -52,12 +54,14 @@ public class StatsPanel extends VBox {
                 buildFooter()
         );
 
+        // AnimationTimer bez ograniczenia FPS — odczyt etykiet jest tani, może się odświeżać co klatkę
         AnimationTimer timer = new AnimationTimer() {
             @Override public void handle(long now) { updateStats(); }
         };
         timer.start();
     }
 
+    // Sekcja z kolorowym lewym obramowaniem i opcjonalnym paskiem postępu na dole
     private VBox buildSection(String title, String accent, VBox rows, Region bar) {
         Label titleLabel = new Label(title);
         titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 13));
@@ -112,6 +116,7 @@ public class StatsPanel extends VBox {
         );
     }
 
+    // Wiersz klucz-wartość z odstępem pomiędzy — wyrównuje do lewej i prawej jednocześnie
     private HBox buildRow(String key, Label value) {
         Label keyLabel = new Label(key);
         keyLabel.setFont(Font.font("Arial", 12));
@@ -186,6 +191,7 @@ public class StatsPanel extends VBox {
         updateBar(blueActiveBar, currentBlue, target);
     }
 
+    // Pasek proporcjonalny — szerokość zależy od szerokości ścieżki, nie stała liczba pikseli
     private void updateBar(Region bar, int current, int target) {
         double ratio = (target > 0) ? Math.min(1.0, (double) current / target) : 0;
         Region track = (Region) bar.getParent();

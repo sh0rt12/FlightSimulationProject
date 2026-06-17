@@ -8,10 +8,8 @@ import javafx.scene.paint.Color;
 
 import java.util.Random;
 
-/**
- * Rysuje pojedynczy samolot: sylwetkę (lub kształt zastępczy), obrót zgodny
- * z kierunkiem lotu oraz migoczący płomień silnika dla maszyn w powietrzu.
- */
+// Rysuje pojedynczy samolot na canvasie. Obrót wyliczamy z kierunku lotu,
+// płomień z silnika losowo się zmienia żeby wyglądał żywiej.
 public class PlaneRenderer {
 
     private static final double SIZE = 32.0;
@@ -32,6 +30,7 @@ public class PlaneRenderer {
         double py = p.y;
         double angle = parked ? (isRed ? 90 : -90) : headingAngle(p, isRed);
 
+        // zaparkowane samoloty rozkładamy w siatce żeby się nie nakładały
         if (parked) {
             px += (p.getId() % 4 - 1.5) * 16;
             py += (p.getId() / 4 % 4 - 1.5) * 16;
@@ -47,6 +46,7 @@ public class PlaneRenderer {
         gc.restore();
     }
 
+    // Liczy kąt obrotu grafiki w stronę celu lub bazy
     private double headingAngle(Plane p, boolean isRed) {
         double targetX;
         double targetY;
@@ -71,6 +71,7 @@ public class PlaneRenderer {
         return isRed ? 90 : -90;
     }
 
+    // Płomień z dyszy — losowa długość żeby migotał
     private void drawFlame(GraphicsContext gc) {
         double flameLength = 10.0 + random.nextDouble() * 8.0;
         double flameWidth  = 6.0;
@@ -90,6 +91,7 @@ public class PlaneRenderer {
         );
     }
 
+    // Jak nie ma grafiki, rysujemy kolorowe kółko — lepsze niż crash
     private void drawBody(GraphicsContext gc, Image jet, boolean isRed) {
         if (jet == null || jet.isError()) {
             gc.setFill(isRed ? Color.RED : Color.BLUE);

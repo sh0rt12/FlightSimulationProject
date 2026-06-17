@@ -1,17 +1,14 @@
 package org.flightsim.domain;
 
-/**
- * "Mózg" samolotu: maszyna stanów (lot, walka, unik, powrót do bazy),
- * zużycie paliwa, wybór najbliższego wroga i decyzje o oddaniu strzału.
- * Sam ruch w przestrzeni realizuje {@link PlaneMovement}.
- */
+// "Mózg" samolotu — maszyna stanów która decyduje co robić w danym kroku.
+// Sam ruch (wektory, pozycja) jest w PlaneMovement żeby tutaj zostały tylko decyzje.
 public class PlaneAI {
 
-    // Paliwo: bazowe zużycie 0.5/krok daje ok. 20s lotu
+    // Zużycie paliwa na krok zależne od stanu — walka i unik kosztują więcej
     private static final float FUEL_BURN_BASE    = 0.5f;
-    private static final float FUEL_BURN_FIGHT   = 1.0f;   // walka pali 2x szybciej
-    private static final float FUEL_BURN_EVADE   = 1.4f;   // unik pali najszybciej
-    private static final float FUEL_RETURN_RATIO = 0.18f;  // powrót do bazy przy 18% paliwa
+    private static final float FUEL_BURN_FIGHT   = 1.0f;
+    private static final float FUEL_BURN_EVADE   = 1.4f;
+    private static final float FUEL_RETURN_RATIO = 0.18f; // wracaj do bazy przy 18% paliwa
 
     private final Plane plane;
 
@@ -26,6 +23,7 @@ public class PlaneAI {
 
         burnFuel();
 
+        // brak paliwa = katastrofa
         if (plane.status.fuel <= 0) {
             plane.state = PlaneState.DEAD;
             return;
@@ -59,6 +57,7 @@ public class PlaneAI {
         if (plane.status.fuel < 0) plane.status.fuel = 0;
     }
 
+    // Wróć do bazy gdy: brak amunicji, mało paliwa albo 1 HP i nie uciekasz
     private boolean shouldReturnToBase() {
         if (plane.status.ammo <= 0) return true;
         if (plane.status.fuel <= plane.stats.maxFuel * FUEL_RETURN_RATIO) return true;
@@ -66,6 +65,7 @@ public class PlaneAI {
         return false;
     }
 
+    // W locie: wejdź w walkę jak wróg w zasięgu orbity; strzelaj jak w zasięgu wzroku
     private void stepFlying(Board board) {
         if (plane.target == null || plane.target.state == PlaneState.DEAD) return;
 
@@ -91,11 +91,13 @@ public class PlaneAI {
             return;
         }
 
+        // Wejdź w EVADE jak dostałeś trafienie na niskim HP
         if (plane.status.hitThisStep && plane.status.hp <= plane.stats.evadeHpThreshold) {
             enterEvade();
             return;
         }
 
+        // Po fightDuration krokach oderwij się — nie walcz w nieskończoność
         if (plane.status.fightTimer >= plane.stats.fightDuration) {
             plane.state             = PlaneState.FLYING;
             plane.status.fightTimer = 0;
@@ -112,6 +114,7 @@ public class PlaneAI {
 
         if (plane.status.evadeTimer >= plane.stats.evadeDuration) {
             plane.status.evadeTimer = 0;
+            // wróć do walki jeśli wróg nadal blisko, inaczej FLYING
             plane.state = (plane.target != null
                     && plane.target.state != PlaneState.DEAD
                     && distanceTo(plane.target) < plane.stats.detectionRange)
@@ -124,6 +127,7 @@ public class PlaneAI {
     private void enterEvade() {
         plane.state             = PlaneState.EVADING;
         plane.status.evadeTimer = 0;
+        // losowy kierunek manewru żeby nie wszyscy uciekali w tę samą stronę
         plane.status.evadeDirection = (Math.random() < 0.5) ? 1.0f : -1.0f;
     }
 

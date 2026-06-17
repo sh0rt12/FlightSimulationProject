@@ -1,25 +1,27 @@
 package org.flightsim.domain;
 
+// Konfiguracja symulacji — wartości domyślne są zbalansowane pod 7v7.
+// Wszystkie można zmienić z menu przed startem.
 public class SimulationConfig {
     private int   initialPlanesPerTeam = 7;
-    private int   targetPlanesPerTeam  = 7;
-    private int   windSpawnChance      = 50;
-    private int   windDuration         = 50;
+    private int   targetPlanesPerTeam  = 7;  // docelowa liczba po respawnach
+    private int   windSpawnChance      = 50;  // 1/50 szans na wiatr co krok
+    private int   windDuration         = 50;  // kroków zanim wiatr ucichnie
     private int   startingAmmo         = 15;
     private float baseSpeed            = 8.5f;
     private int   startingHp           = 3;
     private float projectileSpeed      = 18.0f;
     private float fuelCapacity         = 100.0f;
-    private int   airportCapacity      = 5;
-    private int   maintenanceTime      = 40;
-    private float speedVariance        = 2.0f;
+    private int   airportCapacity      = 5;   // ile samolotów jednocześnie w hangarze
+    private int   maintenanceTime      = 40;  // kroków w hangarze do pełnego serwisu
+    private float speedVariance        = 2.0f; // losowy bonus do prędkości
     private float detectionRangeMin    = 100.0f;
     private float detectionRangeMax    = 180.0f;
-    private float fightRange           = 38.0f;
+    private float fightRange           = 38.0f;  // odległość przy której zaczyna orbita
     private int   shotCooldown         = 5;
     private int   evadeDuration        = 25;
-    private int   fightDuration        = 30;
-    private int   evadeHpThreshold     = 2;
+    private int   fightDuration        = 30;     // po ilu krokach samolot odrywa się od walki
+    private int   evadeHpThreshold     = 2;      // HP przy którym wchodzi EVADE po trafieniu
 
     public int   getInitialPlanesPerTeam() { return initialPlanesPerTeam; }
     public int   getTargetPlanesPerTeam()  { return targetPlanesPerTeam; }

@@ -18,6 +18,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
+// Punkt wejścia aplikacji JavaFX. Najpierw menu konfiguracji, potem okno symulacji.
 public class SimulationApp extends Application {
 
     @Override
@@ -27,6 +28,7 @@ public class SimulationApp extends Application {
         stage.show();
     }
 
+    // Buduje formularz konfiguracyjny z domyślnymi wartościami z SimulationConfig
     private Scene buildMenuScene(Stage stage) {
         SimulationConfig config = new SimulationConfig();
 
@@ -57,6 +59,7 @@ public class SimulationApp extends Application {
         startButton.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         startButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-padding: 10 30; -fx-cursor: hand;");
 
+        // parsujemy pola i wrzucamy do configu — błędne wartości tylko logujemy, nie crashujemy
         startButton.setOnAction(e -> {
             try {
                 config.setInitialPlanesPerTeam(Integer.parseInt(planesInput.getText()));
@@ -85,20 +88,19 @@ public class SimulationApp extends Application {
         return field;
     }
 
+    // Canvas ma stałe 1000x1000 i się nie rozciąga — panel statystyk bierze resztę szerokości
     private void runSimulation(Stage stage, SimulationConfig config) {
         Simulation simulation = new Simulation(config);
 
         SimulationPanel panel      = new SimulationPanel(simulation);
         StatsPanel      statsPanel = new StatsPanel(simulation);
 
-        // Canvas (1000x1000) w kontenerze o stałej szerokości — nigdy się nie rozciąga
         StackPane canvasHolder = new StackPane(panel);
         canvasHolder.setMinWidth(1000);
         canvasHolder.setPrefWidth(1000);
         canvasHolder.setMaxWidth(1000);
         canvasHolder.setStyle("-fx-background-color: #cfe0f0;");
 
-        // Panel po prawej rośnie wraz z oknem przy maksymalizacji
         HBox.setHgrow(statsPanel, Priority.ALWAYS);
 
         HBox root = new HBox(canvasHolder, statsPanel);

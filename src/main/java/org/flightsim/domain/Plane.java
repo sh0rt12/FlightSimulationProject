@@ -1,10 +1,12 @@
 package org.flightsim.domain;
 
+// Abstrakcyjna klasa bazowa dla samolotu. Dane statyczne w PlaneStats, zmienne w PlaneStatus.
+// AI i ruch są w osobnych klasach — Plane tylko je trzyma i deleguje wywołania.
 public abstract class Plane {
     protected final int id;
     public float x;
     public float y;
-    public final float baseX;
+    public final float baseX; // pozycja lotniska macierzystego
     public final float baseY;
 
     protected final PlaneStats  stats;
@@ -13,6 +15,7 @@ public abstract class Plane {
     protected Plane      target;
     protected PlaneState state;
 
+    // zapamiętujemy ostatni wektor ruchu — potrzebny do rysowania i wykrywania kierunku dla wiatru
     protected float lastVx = 0;
     protected float lastVy = 0;
 
@@ -44,6 +47,7 @@ public abstract class Plane {
     public float getVx() { return this.lastVx; }
     public float getVy() { return this.lastVy; }
 
+    // Krok AI — decyzje, potem osobno ruch (kolejność ważna)
     public void step(Board board) {
         ai.step(board);
     }
@@ -59,6 +63,7 @@ public abstract class Plane {
         float  dy   = targetY - this.y;
         double dist = Math.sqrt(dx * dx + dy * dy);
 
+        // spawn pocisku trochę przed samolotem żeby nie trafił sam siebie
         float spawnX = this.x + (dist > 0 ? (float) ((dx / dist) * 16.0) : 0);
         float spawnY = this.y + (dist > 0 ? (float) ((dy / dist) * 16.0) : 0);
 

@@ -2,6 +2,8 @@ package org.flightsim.domain;
 
 import java.util.Random;
 
+// Samolot drużyny niebieskich — startuje przy prawym lotnisku (x=900), baza przy x=950.
+// Logika identyczna z RedPlane, różni się tylko pozycją i flagą drużyny.
 public class BluePlane extends Plane {
 
     private static final Random random = new Random();

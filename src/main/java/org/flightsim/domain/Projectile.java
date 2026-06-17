@@ -1,11 +1,13 @@
 package org.flightsim.domain;
 
+// Pocisk wystrzelony przez samolot. Leci w stałym kierunku wyznaczonym przy tworzeniu
+// i znika jak wyleci poza planszę albo trafi w cel.
 public class Projectile {
     public float x;
     public float y;
     private float vx;
     private float vy;
-    private Plane shooter;
+    private Plane shooter; // potrzebny żeby nie strzelać we własne samoloty i liczyć statystyki
 
     public Projectile(float x, float y, float targetX, float targetY, Plane shooter, float speed) {
         this.x       = x;

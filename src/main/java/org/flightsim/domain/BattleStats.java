@@ -1,6 +1,7 @@
 package org.flightsim.domain;
 
-/** Liczy oddane strzały i trafienia obu drużyn oraz wynikającą z nich celność (%). */
+// Prosta klasa do zbierania statystyk strzałów — oddzielona od Simulation
+// żeby nie zaśmiecać głównego silnika licznikami.
 public class BattleStats {
 
     private int redShots  = 0;
@@ -13,6 +14,7 @@ public class BattleStats {
     public void incrementBlueShots() { blueShots++; }
     public void incrementBlueHits()  { blueHits++; }
 
+    // Zwraca 0.0 zanim ktokolwiek wystrzelił żeby nie było dzielenia przez zero
     public double getRedAccuracy() {
         if (redShots == 0) return 0.0;
         return ((double) redHits / redShots) * 100.0;

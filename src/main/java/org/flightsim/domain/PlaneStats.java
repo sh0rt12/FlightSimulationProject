@@ -1,7 +1,7 @@
 package org.flightsim.domain;
 
-// NIEZMIENNE PARAMETRU SAMOLOTU
-
+// Dane statyczne samolotu — nadawane przy tworzeniu i nigdy nie zmieniane.
+// Dzięki temu nie trzeba pilnować żeby coś przypadkowo nie nadpisało baseSpeed w trakcie walki.
 public class PlaneStats {
     public final float baseSpeed;
     public final int   maxHp;
@@ -12,7 +12,7 @@ public class PlaneStats {
     public final int   shotCooldown;
     public final int   evadeDuration;
     public final int   fightDuration;
-    public final int   evadeHpThreshold;
+    public final int   evadeHpThreshold; // poniżej tego HP samolot próbuje uciec
 
     public PlaneStats(float baseSpeed, int maxHp, int maxAmmo, float maxFuel,
                       float detectionRange, float fightRange, int shotCooldown,
